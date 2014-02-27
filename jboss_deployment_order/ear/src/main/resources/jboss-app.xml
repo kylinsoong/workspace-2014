@@ -1,0 +1,9 @@
+<jboss-app>
+  <loader-repository>
+  org.jboss:archive=deploy-order-ear
+     <loader-repository-config>
+     java2ParentDelegation=false
+     </loader-repository-config>
+  </loader-repository>
+   <module-order>strict</module-order>
+</jboss-app>

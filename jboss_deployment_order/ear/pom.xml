@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>deploy-order-ear</artifactId>
+	<packaging>ear</packaging>
+	<name>JBoss Deployment Order - - EAR</name>
+	<description>JBoss Deployment Order - - EAR</description>
+
+
+	<parent>
+		<groupId>org.jboss.deployOrder</groupId>
+		<artifactId>deploy-order-parent</artifactId>
+		<version>1.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<dependencies>
+		<!-- Dependencies on the ejb and web modules so that they can be found 
+			by the ear plugin -->
+
+		<dependency>
+			<groupId>org.jboss.deployOrder</groupId>
+			<artifactId>deploy-order-war</artifactId>
+			<version>1.0</version>
+			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.deployOrder</groupId>
+			<artifactId>deploy-order-mdb</artifactId>
+			<version>1.0</version>
+			<type>ejb</type>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<finalName>${artifactId}</finalName>
+		<plugins>
+			<!-- Ear plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-ear-plugin</artifactId>
+				<version>2.3.2</version>
+				<!-- configuring the ear plugin -->
+				<configuration>
+					<modules>
+						<!-- specify which web modules to include in the EAR -->
+						<webModule>
+							<groupId>org.jboss.deployOrder</groupId>
+							<artifactId>deploy-order-war</artifactId>
+						</webModule>
+						<!-- specify which EJB modules to include in the EAR -->
+						<ejbModule>
+							<groupId>org.jboss.deployOrder</groupId>
+							<artifactId>deploy-order-mdb</artifactId>
+						</ejbModule>
+					</modules>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jboss.as.plugins</groupId>
+				<artifactId>jboss-as-maven-plugin</artifactId>
+				<version>7.3.Final</version>
+			</plugin>
+		</plugins>
+	</build>
+</project>
