@@ -47,16 +47,16 @@
 				<!-- configuring the ear plugin -->
 				<configuration>
 					<modules>
-						<!-- specify which web modules to include in the EAR -->
-						<webModule>
-							<groupId>org.jboss.deployOrder</groupId>
-							<artifactId>deploy-order-war</artifactId>
-						</webModule>
 						<!-- specify which EJB modules to include in the EAR -->
 						<ejbModule>
 							<groupId>org.jboss.deployOrder</groupId>
 							<artifactId>deploy-order-mdb</artifactId>
 						</ejbModule>
+						<!-- specify which web modules to include in the EAR -->
+						<webModule>
+							<groupId>org.jboss.deployOrder</groupId>
+							<artifactId>deploy-order-war</artifactId>
+						</webModule>
 					</modules>
 				</configuration>
 			</plugin>

@@ -20,7 +20,6 @@ public class QueueClientServlet extends HttpServlet {
 
 	public QueueClientServlet() {
 		System.out.println("Queue Client Servlet Constructed");
-		sendSingal();
 	}
 
 	private void sendSingal() {

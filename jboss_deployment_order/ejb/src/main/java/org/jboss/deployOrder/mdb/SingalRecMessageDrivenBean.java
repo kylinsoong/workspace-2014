@@ -18,15 +18,22 @@ public class SingalRecMessageDrivenBean implements MessageListener {
 
 	
 	public void onMessage(Message message) {
+		
+		try {
+			Class cls = Thread.currentThread().getContextClassLoader().loadClass("org.jboss.deployOrder.servlet.QueueClientServlet");
+			System.out.println("Loaded " + cls);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException("Load Class Error", e);
+		}
+		
 		try {
 			TextMessage tm = (TextMessage)message;
 			String text = tm.getText();
-			if(text.compareTo("KYLIN") == 0) {
-				System.out.println("Receive Singal: " + text);
-			}
+			System.out.println("Received Message: " + text);
 		} catch (Exception e) {
-			throw new IllegalStateException("Receive Singal Error", e);
+			throw new IllegalStateException("Receive Message Error", e);
 		}
+		
 	}
 
 }

@@ -32,6 +32,7 @@
         <module>ejb</module>
         <module>web</module>
         <module>ear</module>
+	<module>client</module>
     </modules>
 
 </project>
