@@ -1,0 +1,12 @@
+To configure the Java Plugin follow these steps:
+Exit Firefox browser if it is already running.
+Uninstall any previous installations of Java Plugin.
+Only one Java Plugin can be used at a time. When you want to use a different plugin, or version of a plugin, remove the symbolic links to any other versions and create a fresh symbolic link to the new one.
+ Create a symbolic link to the libnpjp2.so file in the browser plugins directory
+Go to the plugins sub-directory under the Firefox installation directory
+cd <Firefox installation directory>/plugins
+Create plugins directory if it does not exist.
+Create the symbolic link 
+ ln -s <Java installation directory>/lib/i386/libnpjp2.so
+Note: If you are upgrading your Java version then before creating new symbolic link you should remove old symbolic link to enable latest downloaded Java.
+

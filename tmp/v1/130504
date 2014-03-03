@@ -1,0 +1,80 @@
+示例描述
+  我们知道构建块基于通道之上，是对通道API的更高层抽象，而RspFilter是构建块的主要接口，它可以更灵活的自定义群组调运的模式，对响应响应消息进行过滤。具体RspFilter可以确定是否将群组中所有的节点添加到返回列表，或确定当接收到某一特定成员的响应消息后，群组调运者是否终止调运。如示例-3 RpcDispatcher通信模式中我们通过RequestOptions定义返回模式（GET_FIRST，GET_ALL，GET_MAJORITY，GET_NONE），但RspFilter对响应返回的过滤优先于RequestOptions定义的返回模式。
+  本示例基于示例-3 RpcDispatcher通信模式示例，在示例-3的基础上添加RspFilter响应返回过滤，测试GET_ALL 响应模式与RspFilter定义的过滤规则之间的优先级，以及通过示例体会RspFilter使群组通信更灵活，更可自定义。
+
+示例步骤
+  本示例集群中有三个成员node1，node2 和node3，node1 为协调者（第一个加入集群）负责集群视图的更新。RpcMethods类定义了getNodeName()方法，三个节点启动后都调运集群中所有节点上RpcMethods类的getNodeName()方法，并等待该方法的返回。RspFilter定义的响应规则是将node2不加入响应返回列表（节点上的方法被调运时，忽略getNodeName()方法的返回）。使用示例-0所示的方法编译生成DEMO_HOME，本示例的启动脚本rspFilter.sh位于DEMO_HOME/bin下。接下来我们依次启动三个节点：
+---
+./rspFilter.sh -n node1
+---
+  -n node1 表示节点的名字为node1
+---
+./rspFilter.sh -n node2
+---
+  -n node2 表示节点的名字为node2
+---
+./rspFilter.sh -n node3
+---
+  -n node3 表示节点的名字为node3
+
+结果分析
+1. node1，node2 和node3中任何一个节点启动后我们都可以看到调运群组成员getNodeName()方法的日志信息，如下为node1上输出的日志：
+---
+09:48:07,614 INFO  [RspFilterTest] Call all members getNodeName()
+---
+2. node1，node2 和node3中任何一个节点启动调运群组成员getNodeName()方法，可以看到远程方法的返回输出信息，如下为node3上打印输出远程方法的返回：
+---
+Responses:
+  node1
+  node3
+---
+node2节点的名字没有被返回，是因为RspFilter定义的响应规则是将node2不加入响应返回列表。
+3. node1，node2 和node3中任何一个节点运行的日志中我们可以看到MyMembershipListener输出的日志，当群组成员关系发生变化是群视图被打印输出，如下为node1上输出的日志信息：
+---
+09:48:35,928 INFO  [MyMembershipListener] ViewAccepted, [node1|2] [node1, node2, node3]
+---
+[node1|2] [node1, node2, node3]为打印输出的群组视图，node1|2 表示群组的协调者为node1且视图被更新了3次（node1，node2，node3依次加入集群）。
+
+代码分析
+  本示例所有的源代码可以在cluster/jgroups/stu/src/main/java/com/kylin/jgroups/blocks下找到，接下来我们从代码的层面去解释上面的分析结果，这样有助于更直观的理解构建块RspFilter接口的理解。
+---
+ 30                 channel = new JChannel();
+ 31                 if(null != name) {
+ 32                         channel.setName(name);
+ 33                 }
+ 34 
+ 35                 messageListener = new MyMessageListener();
+ 36                 membershipListener = new MyMembershipListener();
+ 37                 rpcMethods = new RpcMethods(channel);
+ 38                 disp = new RpcDispatcher(channel, messageListener, membershipListener, rpcMethods);
+ 39                 channel.connect("RspFilterTestGroup");
+---
+如上30-33行初始化一个jGroups通道，并设定通道的名称；35-38行分别初始化MyMessageListener，MyMembershipListener，RpcMethods，接着初始化RpcDispatcher；39行通道连接到集群（RspFilterTestGroup），通道只有在连接状态才可以相互发送接收消息。
+---
+ 42                 String param = channel.getName();
+ 43                 MethodCall call = new MethodCall("getNodeName", new Object[]{param}, new Class[]{String.class});
+ 44                 logger.info("Call all members getNodeName()");
+ 45                 RequestOptions requestOptions = new RequestOptions(ResponseMode.GET_ALL, 0, false, new MyRspFilter());
+ 46                 rsp_list = disp.callRemoteMethods(null, call, requestOptions);
+ 47 
+ 48                 System.out.println("Responses:");
+ 49                 List<String> list = rsp_list.getResults();
+ 50                 for(Object obj : list) {
+ 51                         System.out.println("  " + obj);
+ 52                 }
+---
+如上42-46行通过RpcDispatcher的 callRemoteMethods()方法调运集群中的方法，MethodCall实例指定远程方法名为getNodeName，传递的参数为当前节点的名字，ResponseMode.GET_ALL表示我们使用GET_ALL模式，即等待所以节点方法返回，MyRspFilter为RspFilter接口的实现，callRemoteMethods中参数为null，表明所有节点上的方法被调运；
+---
+  6 public class MyRspFilter implements RspFilter {
+  7 
+  8         public boolean isAcceptable(Object response, Address sender) {
+  9                 String name = (String) response;
+ 10                 if(name.equals("node2")) {
+ 11                         return false;
+ 12                 }else {
+ 13                         return true;
+ 14                 }
+ 15         }
+---
+第6行MyRspFilter实现了RspFilter接口，8-14行isAcceptable()方法为返回消息的过滤规则，即当getNodeName()得到的节点名字为node2时，群组通信忽略此消息。
+

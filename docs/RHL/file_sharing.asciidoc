@@ -1,0 +1,44 @@
+HARING WITH NFS
+---------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FILE SHARING WITH CIFS
+----------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FILE SHARING WITH FTP
+---------------------
+
+* Install, start and enable needed packages.
+
+----
+
+----

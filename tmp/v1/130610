@@ -1,0 +1,130 @@
+        示例 X： 坦克大战游戏
+1. 示例简介
+  我们知道jGroups是可靠多播通信工具包，Java应用可以使用该工具包构建多播通信应用。通常在实际应用中，我们需要考虑的问题包括：应用性能最优化，对应用实时监控，应用替代实施方案。我们将通过本示例讨论这些问题。
+  坦克大战是经典的角色对战游戏，游戏中可以有多个坦克参与，但所有坦克分为两种角色，两种角色的坦克可以发射炮弹相互攻击对方，当坦克被击中后坦克的生命值会减少，坦克生命值为零时坦克爆炸，坦克可以通过添加燃料来回复生命值，不同角色的坦克碰撞后生命值也会减少。我们可以通过键盘控制坦克进行游戏：
+    通过键盘方向建（上下左右）控制坦克的移动和方向
+    通过空格建发（space）射子弹。
+    通过F2建重新生成坦克
+  坦克大战游戏是通过Java语言实现了坦克大战游戏。游戏中所有坦克状态都必须保持同步，即任何一个坦克都必须知道所有其他坦克的状态，同时也需要将自己的状态发送给其它坦克。坦克状态包括：
+    坦克方向
+    坦克生命值
+    坦克发射的子弹
+    燃料位置
+我们使用jGroups来实现坦克状态的同步。
+
+2. 坦克大战游戏
+2.1 运行示例
+根据示例-0编译打包生成DEMO_HOME，jGroups Tankwar 示例运行的启动脚本tankwar.sh位于DEMO_HOME/bin目录下，我们可以通过启动脚本运 jGroups Tankwar 示例如下：
+./tankwar.sh -n node1 isGood
+-n node1 指定坦克的名字为node1
+isGood 指定Tank的角色
+./tankwar.sh -n node2
+-n node2 指定坦克的名字为node2
+示例运行如下图所示
+img/tank-demo.png
+2.2 坦克大战游戏架构
+如下图，jGroups Tankwar 游戏分为5个层：游戏界面、通信层、通道、协议栈、传输层
+img/tankwar-architecture.png
+2.2.1 游戏界面
+该模块就一个类MainFrame，该类继承java.awt.Frame为坦克大战游戏提供了界面，我们可以通过键盘控制坦克在该界面移动，MainFrame构造方法需要提供通信层的接口Communication，如下
+---
+public class MainFrame extends Frame {
+...
+public MainFrame(Communication comm, boolean isGood){
+	this.comm = comm ;
+}
+...
+}
+---
+
+2.2.2 通信层
+该层是坦克大战游戏的核心，该层负责连接游戏界面和jGroups通道，该层的抽象接口为Communication如下：
+---
+public abstract class Communication implements ICommunication, IReplication, IJGroups, ITank
+---
+Communication实现了ICommunication, IReplication, IJGroups, ITank接口。其中ICommunication定义了通信的方式，及异步通信和同步通信两种方式。
+---
+public interface ICommunication {
+	public Session synchSend(Session session) throws TankWarCommunicationException;
+	public void asychSend(Session session) throws TankWarCommunicationException;
+}
+---
+坦克大战游戏采用异步实现的方式为主，即任何方法调运都为异步，该异步最终体现在jGroups提供的异步模式上。IReplication接口定义了要复制的视图。
+---
+public interface IReplication {
+	public void replicateTank(TankView view);
+	public void replicateBlood(BloodView view);
+	public void replicateExplode(ExplodeView view);
+	public void replicateMissile(MissileView view);
+}
+---
+坦克大战游戏主要有四种实体，即坦克、血块、炸弹、子弹。其中坦克是坦克的抽象；血块代表燃料，用来恢复坦克生命值；炸弹为显示坦克爆炸的效果；子弹为坦克发射的子弹，用来攻击对方坦克。相对应的我们抽象出坦克视图、血块视图、炸弹视图、子弹视图， 分别代表四种实体。传输时只传输视图信息，这也是为心能考虑。IReplication有四个方法分别用来实现传输坦克视图、血块视图、炸弹视图、子弹视图。游戏界面层就是通过这些方法来完成相应状态同步。
+ITank为坦克大战游戏状态的抽象，如下：
+---
+public interface ITank {
+	public Map<String, Tank> getTankMap();
+	public void put(String key, Tank value);
+	public Map<String, Missile> getMissileMap();
+	public void put(String key, Missile value);
+	public List<Explode> getExplodes();
+	public void add(Explode explode);
+	public List<Blood> getBloods();
+	public void add(Blood blood);
+	public String getName();
+	public int getMemberSize();
+}
+---
+坦克大战游戏有四种实体，由此坦克大战游戏的状态就指某一时刻游戏中所有的坦克、血块、炸弹、子弹。ITank就是坦克大战游戏的状态的抽象，例如使用getTankMap()方法可以获取当前状态下所有坦克的信息，游戏界面层通过此方法获取坦克将其显示在界面，put(String key, Tank value)方法可以添加坦克，例如当新节点加入时该方法被调运。getName()方法获取当前坦克的名字。getMemberSize()获取坦克大战游戏中所有坦克数的总和。
+
+2.2.3 通道
+通道就指jGroups通道，jGroups通道负责通信层将坦克状态变化复制到其他坦克，我们定义了ChannelFactory接口，用来创建初始化jGroups通道。
+---
+public interface ChannelFactory {
+	Channel createChannel(String id) throws Exception;
+	ProtocolStackConfiguration getProtocolStackConfiguration();
+	public JChannel createChannel(String name, String cluster,  ReceiverAdapter reciever);
+}
+---
+createChannel(String id)方法可以根据id获取已经存在的通道；createChannel(String name, String cluster,  ReceiverAdapter reciever)方法根据通道名字，集群的名字，以及消息接收适配器来初始化通道。
+
+2.2.4 协议栈
+协议栈指jGroups协议栈，用来实现消息发送的接收。我们可以在DEMO_HOME/conf/tankwar-udp.xml中查看详细的配置
+
+2.2.5 传输层
+严格来讲，传输层也属于jGroups协议栈，我们单独抽象出此层是因为此层需要与物理网络交互，同时为了性能考虑我们对此层也做了特殊配置，稍候我们将进行详细说明。
+
+3 坦克大战游戏中使用jGroups在性能方面的考虑
+   坦克大战游戏中所有坦克之间的状态共享类似企业应用集群，比如JBoss集群中所有节点状态都必须保持一致，当集群中一个节点状态发生变化时它必须将自己的状态发送给集群中其他节点，其他节点接收到状态变化消息后更新自己的状态，使自己状态与其他节点同步。类似的JBoss集群， 坦克大战游戏中任意时刻当坦克移动、方向发生改变、发射子弹都需要将状态发送给其他坦克，比如游戏中有4辆坦克，每辆坦克都连续发射30发子弹，且坦克在移动，子弹也在移动，这样游戏需要同步维护4个坦克的状态，120发子弹的状态。 精确的说，坦克大战游戏中状态复制的密度比较大，这需要我们在使用jGroups时在性能方面做相关考虑，我们使用的方法是使用多通道代替单通道，且多个通道共享同一个传输层。
+  使用启动脚本开始游戏时终端会输出如下信息:
+-------------------------------------------------------------------
+GMS: address=node1-Tank, cluster=TankWar-Tank-Cluster, physical address=192.168.1.101:39891
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
+GMS: address=node1-Missile, cluster=TankWar-Missile-Cluster, physical address=192.168.1.101:39891
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
+GMS: address=node1-Other, cluster=TankWar-Other-Cluster, physical address=192.168.1.101:39891
+-------------------------------------------------------------------
+这是协议栈成员关系维护协议打印输出的通道信息，即我们创建了三个通道TankWar-Tank-Cluster，TankWar-Missile-Cluster，TankWar-Other-Cluster分别用来传输坦克状态，子弹状态，其它（炸弹，燃料）的状态。
+  在DEMO_HOME/conf/tankwar-udp.xml，即默认UDP配置文件中我们可以发现如下配置：
+<UDP
+         singleton_name="tankwar-tp"
+这样坦克大战游戏在协议栈初始化时共享传输层协议。
+
+4. 坦克大战游戏使用TCP代替UDP
+  jGroups为可靠多播通信工具包，其默认使用UDP，但有些网络环境UDP通信受限制，在这种情况下我们需要使用TCP代替UDP。我们只需在启动时使用-p参数知道TCP配置文件即可，具体：
+./tankwar.sh -n node1 isGood -p tankwar-tcp.xml
+我们可以到DEMO_HOME/conf目下查看 详细tankwar-tcp.xml的内容。
+
+5. 对坦克大战游戏进行监控
+我们可以使用jconsole对坦克大战游戏进行监控，jGroups util包提供接口获取MBeanServer，我们可以将通道注册到获取的MBeanServer，如下代码段：
+---
+MBeanServer server = Util.getMBeanServer();
+if(server == null){
+	throw new Exception("No MBeanServers found;" + "\nTankWar needs to be run with an MBeanServer present");
+}
+JmxConfigurator.registerChannel((JChannel)channel, server, "jgroups-tankwar", channel.getClusterName(), true);
+---
+坦克大战游戏运行时我们可以启动jconsole如下图，我们可以监控各通道统计信息。

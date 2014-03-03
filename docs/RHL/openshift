@@ -1,0 +1,32 @@
+Study notes
+-----------
+
+mongo -- meta data
+
+activeMQ + MCollective
+
+quota + user
+
+cgroups: user + process-group / cpu / memory / IO / if-io / if-bandwidth
+
+selinux
+
+bind/named/DNS
+
+git
+
+iptables(haproxy)
+
+PAM(pluggable security module)
+
+apache/httpd
+
+--------------------------------------------
+
+broker + node = all-in-one
+
+node : gears(container)
+
+gears(district) : cartridge(mysql, jboss, tomcat, php)
+
+application

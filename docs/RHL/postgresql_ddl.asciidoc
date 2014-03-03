@@ -1,0 +1,8 @@
+* Execute sql script `.sql` file
+
+----
+psql -d <DATABASE> -a -f <example.sql>
+----
+
+
+

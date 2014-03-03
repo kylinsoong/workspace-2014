@@ -1,0 +1,116 @@
+示例描述
+  类似MessageDispatcher，RpcDispatcher同属构建块主要接口，构建块基于通道之上，是对通道API的更高层抽象。程序设计者可以使用RpcDispatcher调运集群中任何节点上的任何方法，并等待所有节点上的返回。本示例使用 RpcDispatcher 提供的 callRemoteMethods() 方法调运集群中所有成员的方法，并验证返回的 RspList 对象中远程方法返回的结果，我们同样也验证 GET_ALL 响应模式，超时时间等属性。
+
+示例步骤
+   本示例集群中有三个成员node1，node2 和node3，node1 为协调者（第一个加入集群）负责集群视图的更新。RpcMethods类定义了getNodeName()方法，三个节点都是做相同的事情，调运集群中所有节点上RpcMethods类的getNodeName()方法，并等待该方法的返回。使用示例-0所示的方法编译生成DEMO_HOME，本示例的启动脚本rpcDispatcher.sh位于DEMO_HOME/bin下。接下来我们依次启动三个节点：
+---
+./rpcDispatcher.sh -n node1
+---
+  -n node1 表示节点的名字为node1
+---
+./rpcDispatcher.sh -n node2
+---
+  -n node2 表示节点的名字为node2
+---
+./rpcDispatcher.sh -n node3
+---
+  -n node3 表示节点的名字为node3
+
+结果分析
+1. node1，node2 和node3中任何一个节点启动后我们都可以看到调运群组成员getNodeName()方法的日志信息，如下为node1上输出的日志：
+---
+21:41:58,832 INFO  [RpcDispatcherTest] Call all members getNodeName()
+---
+2. node1，node2 和node3中任何一个节点启动调运群组成员getNodeName()方法，可以看到远程方法的返回输出信息，如下为node3上打印输出远程方法的返回：
+---
+Responses:
+  node2
+  node1
+  node3
+---
+我们可以看到node3打印输出的方法返回有三条，这说明群组中所有节点上的getNodeName()被方法，且都正确返回。我们可以控制集群中方法返回的模式，比如我们可以指定模式为GET_FIRST，该模式表示如果集群中有任何一个节点的方法返回，callRemoteMethods()就返回；模式GET_MAJORITY表示如果集群中大多数节点的方法返回，比如集群中有三个节点，如果有两个节点返回，callRemoteMethods()就返回；本示例使用GET_ALL模式，所以等待所有节点的方法返回后callRemoteMethods()才返回。
+3. node1，node2 和node3中任何一个节点运行的日志中我们可以看到MyMembershipListener输出的日志，当群组成员关系发生变化是群视图被打印输出，如下为node1上输出的日志信息：
+---
+21:42:11,942 INFO  [MyMembershipListener] ViewAccepted, [node1|1] [node1, node2]
+---
+[node1|2] [node1, node2, node3]为打印输出的群组视图，node1|2 表示群组的协调者为node1，竖线后面的2表示视图被更新了3次。
+4. node1，node2 和node3中任何一个节点启动后的日志中我们可以看到RpcMethods中getNodeName()被调运时输出的日志，如下为node1上输出的日志：
+---
+21:42:24,563 INFO  [RpcMethods] node3
+---
+如上为RpcMethods类的getNodeName()方法调运时输出日志，我们将在代码分析部分解释为什么node1节点上会打印输出node3的名字。
+
+代码分析
+  本示例所有的源代码可以在cluster/jgroups/stu/src/main/java/com/kylin/jgroups/blocks下找到，接下来我们从代码的层面去解释上面的分析结果，这样有助于更直观的理解构建快RpcDispatcher的理解。
+---
+ 30                 channel = new JChannel();
+ 31                 if(null != name) {
+ 32                         channel.setName(name);
+ 33                 }
+ 34 
+ 35                 messageListener = new MyMessageListener();
+ 36                 membershipListener = new MyMembershipListener();
+ 37                 rpcMethods = new RpcMethods(channel);
+ 38                 disp = new RpcDispatcher(channel, messageListener, membershipListener, rpcMethods);
+ 39                 channel.connect("RpcDispatcherContentTestGroup");
+---
+如上30-33行初始化一个jGroups通道，并设定通道的名称；35-38行分别初始化MyMessageListener，MyMembershipListener，RpcMethods，接着初始化RpcDispatcher，除了MyMessageListener，MyMembershipListener，RpcMethods外，我们还需要将通道实例作为构造方法参数来初始化RpcDispatcher，这也可以说明构建块是基于通道之上的；39行通道连接到集群，通道只有在连接状态才可以相互交互信息。
+---
+ 42                 String param = channel.getName();
+ 43                 MethodCall call = new MethodCall("getNodeName", new Object[]{param}, new Class[]{String.class});
+ 44                 logger.info("Call all members getNodeName()");
+ 45                 RequestOptions requestOptions = new RequestOptions(ResponseMode.GET_ALL, 0);
+ 46                 rsp_list = disp.callRemoteMethods(null, call, requestOptions);
+ 47 
+ 48                 System.out.println("Responses:");
+ 49                 List<String> list = rsp_list.getResults();
+ 50                 for(Object obj : list) {
+ 51                         System.out.println("  " + obj);
+ 52                 }
+---
+如上42-46行通过RpcDispatcher的 callRemoteMethods()方法调运集群中的方法，MethodCall实例指定远程方法名为getNodeName，传递的参数为当前节点的名字，ResponseMode.GET_ALL表示我们使用GET_ALL模式，即等待所以节点方法返回，callRemoteMethods中参数为null，表明所有节点上的方法被调运；48-52为打印输出方法返回的结果。
+---
+ 8 public class MyMembershipListener implements MembershipListener {
+     ...
+ 12 public void viewAccepted(View view) {
+ 13 logger.info("ViewAccepted, " + view);
+ 14 }
+---
+如上第8行表示MyMembershipListener实现了MembershipListener接口，MembershipListener接口定义一些成员控制（新成员加入集群，集群中节点异常）的方法，这里我们实现了viewAccepted()方法，即当群组成员发生变化时该方法被调运，记录群组视图到日志中。
+---
+  6 public class RpcMethods {
+    ...
+ 24         public String getNodeName(String name) {
+ 25                 logger.info(name);
+ 26                 return channel.getName();
+ 27         }
+ 28 }
+---
+如上我们可以看到RpcMethods类getNodeName方法传入参数为调运者节点的名字，我们将调运者的名字日志输出，并将自己的名字返回，所以我们在结果分析第4部分看到node1上输出node3名字，这是由于node3通过 callRemoteMethods()调运了node1节点上的getNodeName方法。
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

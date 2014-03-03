@@ -1,0 +1,6 @@
+How to create alternatives java?
+--------------------------------
+  which java
+  ls -l /usr/bin/java
+  ls -l /etc/alternatives/java
+  ln -s /usr/java/jdk1.7.0_10/bin/java /etc/alternatives/java

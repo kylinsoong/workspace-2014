@@ -1,0 +1,204 @@
+JBoss微容器（JBoss Microcontainer）是第二代JBoss内核架构，该架构集合第一代JBoss内核架构（纯JMX MBean）优点，加入了POJO Bean的概念，是一个轻量级的容器用来管理POJOs以及他们的部署，配置等。JBoss AS 6，JBoss AS 5都是基于这一架构。详细参照http://www.jboss.org/jbossmc。
+
+根据前面所说，JBossCache即可以独立使用/在​程​序里进行​部​署（示例-6所示），也可以通过JBoss微容器进行部署，本示例演示通过通过JBoss微容器部署JBossCache，并演示通过JBossCache在集群中复制数据。本示例类似示例-6，区别在于本示例将复制程序需要部署与JBoss，符合标准Java企业应用标准。
+
+GWT是Google Web Toolkit的缩写，GWT允许开发人员使用 Java 编程语言快速构建和维护复杂但性能高的 JavaScript 前端应用程序，从而降低了开发难度，加快了开发速度，详细关于GWT请参照http://www.gwtproject.org/，本示例使用GWT构建示例用户界面。
+
+运行本示例之上需要两台机器，两台机器分别安装任意JBoss AS 6或JBoss AS 5（参照本书第二章），基于两台JBoss，我们需要做JBossCache相关的配置，本且本示例应用程序需要部署到两台JBoss之上。本示例架构大致如下图所示：
+  jbosscache-replication-demo-container.png
+JBossCache部署于JBoss微容器之上（JBoss微容器通过JBoss启动）；JBossCache与局域网中其他节点构成集群缓存，共享数据；EJB服务提供操作JBossCache的接口对缓存数据进行增、删、改、查；GWT服务端通过EJB服务获取缓存中数据；GWT客户端展示GWT服务端获取的数据给终端用户。
+
+运行JBossCache复制示例
+1. 编译打包生成部署文件
+使用示例-0编译生成DEMO_HOME，部署文件jbosscache-jboss-ear.ear位于DEMO_HOME/dist目录下。
+2. 启动部署JBossCache于JBoss微容器
+我们通过启动JBoss AS 5来启动JBoss微容器，为了简化我们在同一台物理集群上绑定两个网卡来模拟两台物理机器。安装完JBoss AS 5后，到JBOSS_HOME/server目录下将all示例拷贝两份，模拟两个JBoss示例，如下：
+---
+cp -r all/ node1
+cp -r all/ node2
+---
+在启动JBoss示例之前我们首先需要配置JBossCache。分别编辑node1和node2的deploy/cluster/jboss-cache-manager.sar/META-INF/jboss-cache-manager-jboss-beans.xml文件，在newConfigurations属性<map>中添加自定义的JBossCache：
+<bean name="CacheConfigurationRegistry" class="org.jboss.ha.cachemanager.DependencyInjectedConfigurationRegistry">
+     	<property name="newConfigurations">
+     		<map keyClass="java.lang.String" valueClass="org.jboss.cache.config.Configuration">
+     		  // 自定义 JBossCache 的配置添加在此
+     		</map>
+     	</property>
+</bean>
+如上面，自定义 JBossCache 的内容如下：
+---
+<entry><key>my-custom-cache</key>
+   <value>      
+      <bean name="MyCustomCacheConfig" class="org.jboss.cache.config.Configuration">
+         <property name="transactionManagerLookupClass">org.jboss.cache.transaction.BatchModeTransactionManagerLookup</property>
+         <property name="clusterName">${jboss.partition.name:DefaultPartition}-CustomizedCache</property>
+         <property name="multiplexerStack">${jboss.default.jgroups.stack:udp}</property>
+         <property name="fetchInMemoryState">true</property>
+         
+         <property name="nodeLockingScheme">PESSIMISTIC</property>
+         <property name="isolationLevel">REPEATABLE_READ</property>
+         <property name="useLockStriping">false</property>
+         <property name="cacheMode">REPL_ASYNC</property>
+      
+         <property name="syncReplTimeout">17500</property>
+         <property name="lockAcquisitionTimeout">15000</property>
+         <property name="stateRetrievalTimeout">60000</property>
+         <property name="useRegionBasedMarshalling">false</property>
+         <property name="inactiveOnStartup">false</property>
+         
+         <property name="serializationExecutorPoolSize">0</property>        
+         <property name="listenerAsyncPoolSize">0</property>
+         <property name="exposeManagementStatistics">true</property>
+
+         <property name="buddyReplicationConfig">
+            <bean class="org.jboss.cache.config.BuddyReplicationConfig">
+               <property name="enabled">false</property>
+               <property name="buddyPoolName">default</property>
+               <property name="buddyCommunicationTimeout">17500</property>
+               <property name="autoDataGravitation">false</property>
+               <property name="dataGravitationRemoveOnFind">true</property>
+               <property name="dataGravitationSearchBackupTrees">true</property>
+               
+               <property name="buddyLocatorConfig">
+                  <bean class="org.jboss.cache.buddyreplication.NextMemberBuddyLocatorConfig">
+                     <property name="numBuddies">1</property>
+                     <property name="ignoreColocatedBuddies">true</property>
+                   </bean>
+               </property>
+            </bean>
+         </property>
+         <property name="cacheLoaderConfig">
+            <bean class="org.jboss.cache.config.CacheLoaderConfig">
+                   <property name="passivation">true</property>
+                   <property name="shared">false</property>
+                   
+                   <property name="individualCacheLoaderConfigs">
+                     <list>
+                        <bean class="org.jboss.cache.loader.FileCacheLoaderConfig">
+                           <property name="location">${jboss.server.data.dir}${/}customized</property>
+                           <property name="async">false</property>
+                           <property name="fetchPersistentState">true</property>
+                           <property name="purgeOnStartup">true</property>
+                           <property name="ignoreModifications">false</property>
+                           <property name="checkCharacterPortability">false</property>
+                        </bean>
+                     </list>
+                   </property>
+            </bean>
+         </property>
+      </bean>      
+   </value>
+   </entry>
+---
+如上面配置中属性multiplexerStack指定我们使用udp协议栈，关于协议栈的定义在deploy/cluster/jgroups-channelfactory.sar/META-INF/jgroups-channelfactory-stacks.xml文件中；clusterName属性指定缓存的名称；cacheMode属性知道缓存复制模式为REPL_ASYNC，即所有节点状态保持同步；buddyReplicationConfig属性中配置默认不启用buddy复制；cacheLoaderConfig属性配置了缓存加载器，它使用文件缓存加载，即缓存内容会被加载到磁盘文件中。
+为了以集群方式运行JBoss中防止冲突，我们需要做如下操作：
+编辑node1/deploy/messaging/messaging-service.xml，修改ServerPeerID属性值为1：
+---
+<attribute name="ServerPeerID">${jboss.messaging.ServerPeerID:1}</attribute>
+---
+编辑node2/deploy/messaging/messaging-service.xml，修改ServerPeerID属性值为2：
+---
+<attribute name="ServerPeerID">${jboss.messaging.ServerPeerID:2}</attribute>
+---
+编辑node1/deploy/jbossweb.sar/server.xml文件Engine元素，添加jvmRoute="node1"：
+---
+<Engine name="jboss.web" defaultHost="localhost" jvmRoute="node1">
+---
+编辑node2/deploy/jbossweb.sar/server.xml文件Engine元素，添加jvmRoute="node2"：
+---
+<Engine name="jboss.web" defaultHost="localhost" jvmRoute="node2">
+---
+使用如下命令分别启动node1和node2：
+---
+./run.sh -c node1 -b <ip 1> -g test -u 239.255.100.100
+./run.sh -c node2 -b <ip 2> -g test -u 239.255.100.100
+---
+-c 指定启动JBoss实例名称
+-b 绑定一个本地ip地址
+-g 指定一个分区名称
+-u 绑定一个多播地址
+注意关于详细JBoss启动参照JBoss 5文档：http://www.jboss.org/jbossas/docs/5-x。
+我们通过http://<ip 1>:8080/jbosscache/访问node1示例，会出现如下初始界面：
+  jbosscache-replication-demo-container-init.png
+在Fqn输入框输入路径/a/b/c点击Add按钮，添加缓存示例，如下图：
+  jbosscache-replication-demo-container-add.png
+使用同样的办法我们添加k2/v2，k3/v3。
+至此我们可以访问另一个节点查看缓存复制结果，访问http://<ip 2>:8080/jbosscache/，展开缓存Fqn路径，点击缓存节点c，我们发现node1缓存中的内容已经复制到node2，如下所示：
+  jbosscache-replication-demo-container-result.png
+
+示例分析
+示例代码位于cluster/jbosscache/jboss中，共包括四个模块：
+service - 为EJB服务模块
+ui - 为GWT用户界面模块
+test - 为EJB客户端，用来测试EJB服务提供的缓存操作接口
+ear - 为打包模块负责打包生成jbosscache-jboss-ear.ear
+1. EJB服务模块
+该模块EJB接口类为JBossCacheService，它定义了如下接口给GWT服务器端使用：
+---
+public void addCacheContent(String fqn, String key, String value)  throws Exception;
+public List<String> getFqnStrs() throws Exception;
+public Map getCacheNodeContent(String fqn)  throws Exception;
+---
+addCacheContent()方法将键值对添加到fqn指定路径的节点上；getCacheNodeContent()方法通过fqn指定缓存节点路径获取相关节点上的数据；getFqnStrs()获取所有缓存节点路径。在EJB服务实现类JBossCacheSession中，我们通过CacheManager获取缓存示例：
+---
+	Context ctx = new InitialContext();
+	cacheManager = (CacheManager) ctx.lookup("java:CacheManager");
+	cache = cacheManager.getCache(CACHE_KEY, true);
+	cache.start();
+---
+我们会在随后章节介绍CacheManager部署JBossCache。添加或获取缓存的方法实现如下：
+---
+public void addCacheContent(String fqn, String key, String value)  throws Exception {
+	logger.info("add " + key + " -> " + value + " to " + fqn);
+	getCache().put(Fqn.fromString(fqn), key, value);
+}
+public Map getCacheNodeContent(String fqn) throws Exception {
+	logger.info("get Cache Node content [" + fqn + "]");
+	return getCache().getData(Fqn.fromString(fqn));
+}
+---
+如前面章节所说，JBossCache的Cache接口提供了很多方法用来对JBossCache进行操作，这里我们使用了put()和getData()方法。
+2. GWT用户界面模块
+该模块定义了用户界面，详细关于GWT开发的问题请参照Google相关文档，这里我们GWT客户端定义了接口JBossCacheService，
+---
+public interface JBossCacheService extends RemoteService{
+	String ping(String name) throws IllegalArgumentException;
+	NodeEntity initTree();
+	List<CacheEntity> getCacheContent(String path) throws IllegalArgumentException;
+	Integer addCacheContent(String fqn, String key, String value) throws IllegalArgumentException;
+}
+---
+GWT服务器端有JBossCacheService的实现，如下：
+---
+public class JBossCacheServiceImpl extends RemoteServiceServlet implements JBossCacheService {
+	
+	@EJB
+	private com.kylin.jbosscache.custom.service.JBossCacheService jbosscacheService;
+---
+该实现注入EJB服务，通过EJB接口操作缓存。
+3.测试模块
+该模块为EJB客户端，如果jbosscache-jboss-ear.ear部署成功后，可以通过该模块代码测试部署是否成功，注意您可以将该模块的代码引入Eclipse，添加JBOSS_HOME/client中jar到classpath，运行JBossCacheServiceClient可以调运部署与JBoss之上的EJB服务。
+
+示例监控
+我们可以通过3方面进行监控。从JBoss日志进行简单监控，JBOSS_HOME/server/$PROFILE/log下有详细的日志，JBoss运行时，在JBoss控制台也会有相关的输出，如下：
+---
+---------------------------------------------------------
+GMS: address is IP 1:47535 (cluster=test-CustomizedCache)
+---------------------------------------------------------
+11:02:11,744 INFO  [RPCManagerImpl] Cache local address is IP 1:47535
+11:02:11,744 INFO  [RPCManagerImpl] state was retrieved successfully (in 2.01 seconds)
+11:02:11,753 INFO  [ComponentRegistry] JBoss Cache version: JBossCache 'Cascabel' 3.1.0.GA
+11:11:30,591 INFO  [RPCManagerImpl] Received new cluster view: [IP 1:47535|1] [IP 1:47535, IP 2:36250]
+---
+如上，JBossCache底层使用jGroups，我们可以看到jGroups协议栈初始化输出的通道名称为test-CustomizedCache；缓存本地的地址为IP 1:47535；缓存初始时状态转移成功的信息，需要注意缓存状态转移是JBoss集群中重要的特性，在一个集群中，当新节点加入时，首先它要获取集群的状态，这样应用高可用得到保证；缓存的版本为JBossCache 'Cascabel' 3.1.0.GA；集群视图，本示例共两个节点，所以视图为[IP 1:47535|1] [IP 1:47535, IP 2:36250]。
+我们也可以通过jconsole进行管理，在启动JBoss时添加参数-Djboss.platform.mbeanserver，这样JBoss启动完成后运行jconsole
+---
+jconsole
+---
+连接相应JBoss示例，在MBeans列，选择jboss.cache，my-custom-cache进行监测管理，如下图：
+  jbosscache-replication-demo-container-jconsole.png
+通过JBoss自身绑定的JMX控制台监控管理，JBoss启动完成后登录http://<ip>:8080/jmx-console/，点击jboss.cache，我们可以看到我们定义的JBossCache，我们可以通过相关JMX MBeans属性进行相关监测可管理。
+
+
+
+

@@ -1,0 +1,32 @@
+Linux Platform Create DB, User, Grant privileges
+------------------------------------------------
+
+* Start mysql
+----
+service mysqld start
+----
+
+* login as root
+----
+mysql -u root -p
+----
+
+* CREATE DATABASE
+----
+CREATE DATABASE joomla;
+----
+
+* CREATE USER
+----
+create user 'joomla_user'@'localhost' identified by 'joomla_pass';
+----
+
+* GRANT PERMISSIONS
+----
+grant all on joomla.* to joomla_user@'localhost';
+----
+
+* FLUSH PRIVILEGES, Tell the server TO reload the GRANT TABLES	
+----
+FLUSH PRIVILEGES;
+----

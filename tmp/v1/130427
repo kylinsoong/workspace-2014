@@ -1,0 +1,35 @@
+实验步骤说明
+1. 使用示例-0所示的方法编译生成DEMO_HOME，本实验源代码路径：cluster/jgroups/stu/src/main/java/com/kylin/jgroups/performance/LargeState.java
+2. 启动node1，node1将作为状态提供者，也是集群中两个节点的协调者，我们使用启动脚本启动时需要附件-provider，同时我们必须指定jGroups配置文件和节点的名字，我们使用DEMO_HOME/conf下config.xml为状态交换实现的jGroups配置文件，node1为节点名字，同样我们也可指定要交换状态的大小，具体使用如下参数启动
+./largestate.sh -size 10000000 -provider -name node1 -props config.xml
+  -size 10000000 表示我们进行状态交换的大小为10MB，即node2从node1得到10MB的状态
+  -provider 表示node1为状态提供者
+  -name node1 表示节点的名字为node1
+  -props config.xml 表示使用jGroups配置文件为config.xml
+3. 启动node2，node2为状态交换的请求者，类似于启动状态提供者节点，我们必须指定jGroups配置文件和节点的名字，且配置文件与状态提供者指定的配置文件相同，名字与状态提供者不同，这里我们同样使用DEMO_HOME/conf下config.xml为状态交换实现的jGroups配置文件，node2为状态交换的请求者节点名字，交换状态的大小我们也可以通过启动参数指定，我们可以使用如下命令启动
+./largestate.sh -size 10000000 -name node2 -props config.xml
+  -size 10000000 表示我们进行状态交换的大小为10MB
+  -name node2 表示为状态交换的请求者的名字为node2
+  -props config.xml 表示使用jGroups配置文件为config.xml
+
+明白状态交换的具体过程
+  使用实验步骤说明中的步骤进行实验操作，通过node1及node2输出的日志我们可以总结状态交换的具体过程如图-x所示
+    图-x
+  . 状态提供者node1启动，等待状态交换请求者请求交换状态
+  . 状态请求者node2启动，在启动的过程中向状态提供者node1发送状态交换请求，代码层面是node2通道的getState（）方法被调运（channel.getState(null, 0)）
+  . 状态提供者node1通过输出流将状态交换给状态请求者node2，代码层面是node1的getState(OutputStream ostream)方法被调运
+  . 状态请求者node2通过输入流接收状态提供者node1输出的状态，代码层面是node2的setState(InputStream istream)方法被调运
+
+明白状态交换的性能
+  使用实验步骤说明中的步骤进行实验，使用-size指定状态交换的大小为100MB，状态交换完成后在状态请求者node2端会输出状态交换的总时间，如下为我测试中的输出
+  [2013-04-27 15:50:29,981] <-- received 100MB in 841ms
+如上日志说明交换100MB的数据花费了841毫秒。jGroups状态交换的性能与您物理机器的网卡有关。如果您使用100MB每秒大小吞吐量的网卡设备则理论上来说每秒可以交换100MB大小的状态，1分钟可以交换6GB作用的状态；如果使用1000MB每秒大小吞吐量的网卡设备则理论上来说每秒可以交换1GB大小的状态，1分钟可以交换60GB作用的状态。我测试中使用的是百兆网卡，所以传输100MB耗费了641毫秒是正常的。在后面第四部分我们将介绍Infinispan数据网格，企业应用可以使用Infinispan数据网格做数据存储，试想如果我们使用千兆吞吐量的网卡，数据传输的性能上是相当可观的。另外在使用jGroups为底层通信的应用比如JBoss，如果怀疑集群功能不正常，可以使用本使用进行测试您怀疑的网络环境。
+
+明白状态交换可能发生的异常
+  JBoss集群具有高可用及容错的功能，比如集群中某一节点发生异常重启节点的过程中会进行状态交换，该过程可能发生错误包括状态提供者getState(OutputStream ostream)实现将状态以输出流的方式写出时出错，或状态接收者setState(InputStream istream)实现以输入流的方式接收状态时出错，本实验也可以模拟这种情况，具体在启动状态提供者时附加-provider_fails启动参数，或在启动状态接收者时附加-requester_fails启动参数，如下所示
+  ./largestate.sh -size 100000000 -provider -name node1 -props config.xml -provider_fails
+  ./largestate.sh -size 100000000 -name node2 -props config.xml -requester_fails
+可能出现的错误如下：
+org.jgroups.StateTransferException: state transfer failed
+	at org.jgroups.JChannel.getState(JChannel.java:584)
+	at org.jgroups.JChannel.getState(JChannel.java:512)

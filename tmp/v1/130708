@@ -1,0 +1,11 @@
+我们知道JBossCache是一个分布式缓存框架，可以单独或在容器中使用，JBossCache为JBoss提供了底层分布式缓存的支持，包括：
+web应用集群中会话状态的复制
+EJB集群中有状态会话Bean状态的复制
+JPA/Hibernate实体二级缓存
+JMS消息服务集群中状态同步
+HA-JNDI服务
+
+在前面示例-7中，我们演示了如何定制自己的JBossCache，我们知道通过CacheManager可以获取缓存实例，在JBoss中通过CacheManager来部署JBossCache，它部署在JBOSS_HOME/server/<PROFILE>/deploy/cluster/jboss-cache-m anager.sar。CacheManager是缓存实例的工厂类和注册器，它通过配置文件，根据缓存名称注册了一系列缓存；当JBoss中的服务需要缓存时，根据缓存名称请求CacheManager，CacheManager创建缓存（如果不存在）返回，同时CacheManager保存了每一个创建了的缓存的引用，所以JBoss中同一服务共享缓存。当服务使用完缓存后，它将缓存释放回CacheManager。CacheManager维护缓存实例，如果某一缓存实例没有被任何服务使用后，缓存实例被删除。
+
+本章包括三个示例，分别演示EJB集群中有状态会话Bean状态的复制，JMS消息服务集群中状态同步和JPA/Hibernate实体二级缓存和一个实验，通过实验我们给出一个web应用集群的解决方案，并分析web应用集群中JBossCache的作用。
+

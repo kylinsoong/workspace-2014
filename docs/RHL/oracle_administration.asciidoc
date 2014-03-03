@@ -1,0 +1,66 @@
+A group quick admin commands:
+-----------------------------
+
+* quick connect to Oracle as sysdba
+----
+sqlplus / as sysdba
+----
+
+* quick exit connection
+----
+exit
+----
+
+* quick shutdown instance, connect to Orace use sysdba accunt, execute:
+----
+shutdown immediate  
+----
+
+* quick  stop tns listener
+----
+tnslsnr stop 
+----
+
+* quick stop oracle listener
+----
+lsnrctl stop
+----
+
+* quick start oracle listener
+----
+lsnrctl start
+----
+
+* quick start instance, connect to Oracle use sysdba, execute
+----
+startup 
+----
+
+A group basic commands for manage user, tablespace
+--------------------------------------------------
+
+* create tablespace
+----
+create tablespace TESTSPACE datafile '/oracle/oradata/TESTSPACE.DBF' size 100M
+----
+
+* create user
+----
+create user kylin identified by redhat default tablespace TESTSPACE;
+----
+
+* grant rights to user
+----
+grant connect,resource,dba to kylin;  
+----
+
+* drop user
+----
+drop user kylin;
+----
+
+* drop tablespace
+----
+drop tablespace TESTSPACE including contents and datafiles;
+---- 
+

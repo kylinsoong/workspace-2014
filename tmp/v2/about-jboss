@@ -1,0 +1,48 @@
+您好
+
+非常感谢今天您的电话，根据我们电话中的沟通，我简单从三个方向去说说JBoss,三个方面包括：
+  JBoss现状 - 企业化
+  JBoss技术动态
+  JBoss未来展望
+
+JBoss现状 - 企业化
+JBoss是开源的Java EE应用服务器，专门用来运行Java EE（Java EE是Java企业应用的简称，是Java三大分支之一）程序。2006年底全球最大的开源软件公司Red Hat（http://www.redhat.com/products/jbossenterprisemiddleware/）收购了JBoss，JBoss开始了企业化/商业化道路，随着收购后整合以及新版本的发布，如今JBoss作为Red Hat中间件领域的主打产品，与Oracle 的 WebLogic,IBM 的 Websphere 并称为三大中间件产品。目前Red Hat在全球范围内有专业的JBoss销售团队、JBoss售前架构工程师、JBoss售后技术支持工程师、JBoss开发团队等，这确保了JBoss的高速发展，特别在欧美，日本市场JBoss有相当成熟的市场，在中国特别最近两年客户群体有很大的扩张，国内JBoss主要使用者主要包括银行，保险公司，汽车公司等，如下我列举一些国内客户：
+  TravelSky Technology Limited（中国民航信息网络，中航信是Red Hat 大客户，中航信新一代系统全面使用JBoss）
+  china construction bank（中国建设银行，建行外围新系统，如手机支付等系统使用JBoss）
+  http://www.12306.cn（铁道部售票系统使用JBoss集群提供全国售票业务）
+  China Pacific Insurance (Group) Co., Ltd（太平洋保险从去年开始内部应用开始大面积从WebLogic迁移到JBoss）
+  Aeon Life Insurance Co., Ltd（新华人寿保险股份有限公司）
+  American International Assurance Company Limited（友邦保险有限公司）
+  China Unionpay Co., Ltd（中国银联新系统基于JBoss）
+  China Central Television（中央电视台部分应用是部署与JBoss之上）
+  Toyota Motor (China) Investment Co., Ltd（丰田汽车）
+  VOLKSWAGEN FINANCE (CHINA) COMPANY LIMITED（大众汽车）
+
+  
+JBoss技术动态
+从技术发展方面来说，我们可以将JBoss技术发展分为三个阶段：
+  第一阶段，2002-2007，第一代JBoss，完全JMX MBean架构，JBoss 4.2版本之前都属于这一阶段，实现J2EE1.4标准(详细J2EE解释参照[1])，支持集群高可用等
+  第二阶段，2007-2012，第二代JBoss，基于JBoss Microcontainer架构，JBoss 4.3 - JBoss 6属于这一阶段，同样支持集群高可用，是Red Hat收购后的整合节点的产品
+  第三阶段，2012- ，第三代JBoss，基于MSC架构，JBoss 7属于这一阶段，实现J2EE1.6标准，以及有一些列领先市场的技术特色，是Red Hat收购后大规模重写后产品，支持集群，高可用，集群域等
+JBoss是开源的Java EE应用服务器，这使技术创新，支持团队非常大范围，http://www.jboss.org/以是Java领域除（http://apache.org/）外，最具影响力的社区，来自全球的技术爱好者参与JBoss的创新，与问题解决；
+从产品稳定度，产品成熟度方面来说，由于是商业应用，有专门团队（Red Hat）维护，每天都有问题修复与文档的完善等。
+
+JBoss未来展望
+  1. 市场占有率会快速上升 - Red Hat Linux操作系统市场占有率在70%左右，Red Hat JBoss营销策略就是将原来Red Hat Linux操作系统客户发展为JBoss客户，比如，建行，中行信，太平洋保险，友邦保险等就是成功案例
+  2. 影响力会进一步加强 - JBoss 7 的宣传口号中有这样一句：“云端的JEE服务器”，JBoss 7可以运行在Red Hat共有云PaaS平台 Openshift之上，Amazon 云平台也支持运行JBoss,每年全球范围内都有JBoss用户开发者大会举行(去年就在中国举行），等一系列活动会提升JBoss影响力
+  3. 新技术方面的贡献会进一步加强 - 互联网应用需要在短时间内高事务（淘宝双十一促销等），JBoss在这一方面提供的内存大数据缓存方案理念得到很多互联网公司使用（淘宝使用JBoss缓存），JBoss有开源，合作的特定，这确保JBoss技术领先其他服务器。
+
+任何疑问，问题或反馈信息欢迎回复邮件或电话让我知道。如果可以我可以做个幻灯片，到现场和你们聊聊JBoss，以及我对我这本JBoss书的想法。
+
+谢谢
+宋志麒（18611907049）
+
+
+【1】什么是J2EE
+J2EE为Java企业应用定义了一套标准，这套标准供Java企业应用服务器供应商使用，Java企业应用服务器以实现大多数J2EE标准来确保J2EE应用可运行于它上面。技术方面来讲，J2EE最大的特点是分布式，异步，常见J2EE标准包括：
+  JSP/Servlet - 任何Java企业应用服务器都实现这一协议，常说的web应用就与这个相关，tomcat就是实现JSP/Servlet的web服务器
+  EJB - Java分布式应用标准
+  JMS - Java消息服务标准
+  JAX-WS/JAX-RS - Web Service，属于分布式服务标准，相较EJB,提供了更低耦合的分布式整合服务
+  JPA - Java 存储标准，常见Hibernate是JPA实现，最长见J2EE标准，一般应用都需存取数据库，都基于这一应用
+  JCA - Java 连接标准，通过此标准我们可以将数据库连接等注册到服务器内部

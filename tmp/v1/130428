@@ -1,0 +1,115 @@
+---
+ 31 public class ChatDemo extends ReceiverAdapter
+---
+如上ChatDemo 31行代码，ChatDemo类继承ReceiverAdapter，ReceiverAdapter定义了receive(Message msg)，viewAccepted(View new_view)等方法，这些方法负责接收群组消息，处理群组中成员变化，初始化群组状态等。本示例重写了这些方法，如下，代码片段：
+---
+ 40         public void receive(Message msg) {
+ 41                 Address sender = msg.getSrc();
+ 42                 println("[" + sender + "] " + msg.getObject());
+ 43         }
+ 44 
+ 45         public void viewAccepted(View view) {
+ 46                 println("view: " + view);
+ 47         }
+---
+如上40-43行为重写的receive()方法，该方法负责处理接收到群组消息，这里我们只是将收到的消息消息的发送者和消息内容打印输出；45-47行为重写的viewAccepted()方法，当群组中的成员发生变化（新成员加入，或已有成员退出）时，该方法被调运，我能这里只是简单打印输出当前视图。
+---
+ 52                 channel = new JChannel();
+ 53                 if(null != name) {
+ 54                         channel.setName(name);
+ 55                 }
+ 56                 channel.setReceiver(this);
+ 57                 channel.setDiscardOwnMessages(true);
+ 58                 channel.connect(clusterName);
+---
+52行初始化了一个通道，JChannel构造方法如果没有参数传递时，默认classpath下的udp.xml被使用；54行设定当前通道的名字，我们看到的节点名字node1，node2是在此处设定的；56行设定通道接收者，由于ChatDemo类继承ReceiverAdapter类，所以这行代码使我们重写的receive()和viewAccepted()方法起作用；57行忽略自己发送的消息，jGroups使用多播机制传递消息，所有物理网络地址都会接收到群组消息，该行代码过滤掉自己发送给自己的消息；58行使通道处于连接状态，通道只有在连接状态才可以接收和发送消息给群组中的成员。
+
+
+示例描述
+  构建快基于通道之上，是对通道API的更高层抽象，MessageDispatcher提供异步和同步的方法发送消息给集群中的成员并等待响应，我们知道直接使用jGroups API可以向群组发送消息，或从群组接收消息，但发送和接收之间没有任何联系，而使用MessageDispatcher发送消息和接收消息是在同一个事务中完成。本示例演示使用MessageDispatcher 发送消息到集群所有成员并等待响应，验证 GET_ALL 响应模式，超时时间等属性。
+
+示例步骤
+  本示例集群中有三个成员node1，node2 和node3，node1 为协调者（第一个加入集群）负责集群视图的更新。三个节点都是做相同的事情，向集群中所有节点发送一条消息，并等待接收响应消息。使用示例-0所示的方法编译生成DEMO_HOME，本示例的启动脚本msgDispatcher.sh位于DEMO_HOME/bin下。接下来我们依次启动三个节点：
+---
+./msgDispatcher.sh -n node1
+---
+  -n node1 表示节点的名字为node1
+---
+./msgDispatcher.sh -n node2
+---
+  -n node2 表示节点的名字为node2
+---
+./msgDispatcher.sh -n node3
+---
+  -n node3 表示节点的名字为node3
+
+结果分析
+ 1. node1，node2 和node3中任何一个节点启动后我们都可以看到发送消息到群组的日志信息，如下为node1上输出的日志：
+    ---
+    16:36:43,699 INFO  [MessageDispatcherTest] Casting message to all group members
+    ---
+ 2. node1，node2 和node3中任何一个节点启动发送完消息后都可以看到群组中返回消息的输出信息，如下为node3上打印输出的响应消息：
+    ---
+    Responses:
+      node3-MessageDispatcher Test Message
+      node2-MessageDispatcher Test Message
+      node1-MessageDispatcher Test Message
+    ---
+    我们可以看到node3节点打印输出的响应消息有三条，及集群中的所有节点都收到node3发送的消息，且集群中所有节点发送的响应消息都被node3收到。我们可以通过响应模式来控制是否消息发送者要等待所有节点的响应消息，本示例中使用的是 GET_ALL 响应模式，所以只有当接收到所有节点的响应消息或等待超时抛出异常才终止。
+ 3. node1，node2 和node3中任何一个节点启动后的日志中我们可以看到MyRequestHandler处理消息输出的日志，如下为node1上输出的日志：
+    ---
+    16:37:11,839 INFO  [MyRequestHandler] node3, MessageDispatcher Test Message
+    ---
+ 4. node1，node2 和node3中任何一个节点运行的日志中我们可以看到MyMembershipListener输出的日志，当群组成员关系发生变化是群视图被打印输出，如下为node1上输出的日志信息：
+    ---
+    16:37:11,655 INFO  [MyMembershipListener] ViewAccepted, [node1|2] [node1, node2, node3]
+    ---
+    [node1|2] [node1, node2, node3]为打印输出的群组视图，node1|2 表示群组的协调者为node1，竖线后面的2表示视图被更新了3次（node1|0，node1|1，node1|2）；视图中共有三个成员，即node1，node2 和node3
+
+代码分析
+  本示例所有的源代码可以在cluster/jgroups/stu/src/main/java/com/kylin/jgroups/blocks下找到，接下来我们从代码的层面去解释上面的分析结果，这样有助于更直观的理解构建快MessageDispatcher的理解。
+---
+ 47                 channel = new JChannel(props);
+ 48                 if(null != name) {
+ 49                         channel.setName(name);
+ 50                 }
+ 51                 handler = new MyRequestHandler(channel);
+ 52                 messageListener = new MyMessageListener();
+ 53                 membershipListener = new MyMembershipListener();
+ 54 
+ 55                 disp = new MessageDispatcher(channel, messageListener, membershipListener, handler);
+ 56                 channel.connect("MessageDispatcherTestGroup");
+ 57 
+ 58                 Util.sleep(100);
+ 59                 logger.info("Casting message to all group members");
+ 60                 Message message = new Message(null, null, new String("MessageDispatcher Test Message"));
+ 61                 rsp_list = disp.castMessage(null, message, new RequestOptions().setMode(ResponseMode.GET_ALL).setTimeout(0));
+ 62 
+ 63                 System.out.println("Responses:");
+ 64 
+ 65                 List list = rsp_list.getResults();
+ 66                 for(Object obj : list) {
+ 67                         System.out.println("  " + obj);
+ 68                 }
+---
+如上47-50行创建一个，设定相应节点的名字；55行实例化一个 MessageDispatcher，我们可以看到，构建快接口是基于通道之上，是对通道的更高层抽象，所以创建 MessageDispatcher时需要传递一个实例化的通道（channel），MessageDispatcher 实例化后通道开始连接到群组（如56行所示）；59-61行创建一个消息，通过 castMessage（）方法将消息发送到群组，注意，目的地址为空，所以消息接收者为群组所有成员，响应模式为 GET_ALL，所以发送者等待所有成员响应后 castMessage（）方法返回，超时时间为 0，即castMessage一直出于等待状态知道所有节点响应消息返回或超时抛出异常；65-68行打印输出所有响应返回消息。
+---
+  9 public class MyRequestHandler implements RequestHandler {
+      ...
+ 20         public Object handle(Message msg) throws Exception {
+ 21                 Address sender = msg.getSrc();
+ 22                 logger.info(sender + ", " + msg.getObject());
+ 23                 return channel.getName() + "-" + msg.getObject();
+ 24         }
+ 25 
+ 26 }
+---
+如上第9行，MyRequestHandler实现RequestHandler接口，RequestHandler定义了handle方法，用来处理接收到的消息，20-24行为我们实现的handle方法，我们在日志中记录消息发送者的名字和消息的内容（结果分析第3点node1输出的日志“node3, MessageDispatcher Test Message”表示消息发送着是node3，消息的内容是“MessageDispatcher Test Message”），并将自己的名字和接收到消息的内容返回（结果分析第2点node3输出的日志包括“node1-MessageDispatcher Test Message”表示该响应消息是从node1返回的）。
+---
+ 8 public class MyMembershipListener implements MembershipListener {
+     ...
+ 12         public void viewAccepted(View view) {
+ 13                 logger.info("ViewAccepted, " + view);
+ 14         }
+---
+如上第8行表示MyMembershipListener实现了MembershipListener接口，MembershipListener接口定义一些成员控制的方法，这里我们实现了viewAccepted()方法，即当群组成员发生变化时该方法被调运，记录群组视图到日志中。

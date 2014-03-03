@@ -1,0 +1,363 @@
+JBossCache基于jGroups之上,是一个树形结构的，可集群的，事务性的缓存，它可用于非集群的环境中，用来缓存频繁使用的数据在内存中。但JBossCache主要是一个集群的缓存，通常在企业应用集群中使用JBossCache复制节点之间状态，保证企业应用的高可用和容错能力。之前我们对JBossCache做了基本介绍，包括基本API、启动运行、配置部署，监控管理等，这里JBossCache复制示例主要通过图形化或命令行的模式来展示或说明这些知识点。
+
+JBossCache复制示例
+1. JBossCache复制示例架构
+如下图所示
+docs/img/jbosscache-replication-demo.png
+JBossCache复制示例主要包括两部分，核心部分和展示部分。核心部分包括JBossCache和jGroups，我们知道jGroups是群组通信工具包，JBossCache基于jGroups构建集群缓存。这部分包括JBossCache启动等主要逻辑。展示部分指的是显示界面，我们有三种界面展示JBossCache的树状结构和树中各个节点上的内容，三种界面包括：
+GUI - Java swing界面
+bsh - Java BeanShell界面，轻量级的Java脚本实现，通过bsh我们可以在命令行中使用Java程序的语法
+console- 传统命令行界面
+2. 运行JBossCache复制示例
+根据示例-0所示的步骤生成DEMO_HOME，示例运行启动脚本位于DEMO_HOME/bin目录下，我们知道我们有三种显示界面，接下来我们依次运行显示这三种界面。
+2.1 以GUI界面显示的方式运行JBossCache复制示例
+此处我们启动两个节点，用GUI界面显示两个节点之间的复制状况，两个节点位于局域网内不同机器，分别在两个节点上打开命令行终端，进入DEMO_HOME/bin目录，执行：
+./jbosscache.sh -b <node1_IP> -c total-replication.xml
+./jbosscache.sh -b <node2_IP> -c total-replication.xml
+-b <node1_IP> 指定JBossCache绑定的IP地址，如果不指定，JBossCache使用127.0.0.1
+-c total-replication.xml 指定JBossCache配置文件，我们必须指定，total-replication.xml文件位于DEMO_HOME/conf目录下
+启动完成后GUI界面显示出来，选择其中任何一界面的跟节点，单击鼠标右键选择“Add to this node”，在弹出添加对话框中添加内容“/a/b/c”，即Fqn路径为“/a/b/c”，我们在跟目录添加了三个节点a，b和c，在添加对话框点击“OK”确认添加后我们去观察另一GUI界面，我们会发现树状结构的节点“/a/b/c”已经复制过去，如下图：
+	docs/img/jbosscache-replication-demo-run.png 
+如上面树形结构中，共有四个节点，a，b，c和跟节点，任何一个节点都可以键值对的方式保存数据，在应用中您可通过Fqn路径来获取节点，并对节点数据做更新。在这里我们在任何一界面选择b节点，单击鼠标右键选择“Add/Modify data”，在弹出添加对话框中添加键值对k1/v1，同样我们添加键值对k2/v2和k3/v3。同样我们去观察另一GUI界面，选择b节点，刚才添加的数据也完成了复制，如下图：
+        docs/img/jbosscache-replication-demo-b.png 
+2.2 以Console显示的方式运行JBossCache复制示例
+同样我们演示局域网内两台机器之间的复制状况。在局域网中的两台机器上分别打开两个终端，进入DEMO_HOME/bin目录，执行：
+./jbosscache.sh -b <node1_IP> -c total-replication.xml -console
+./jbosscache.sh -b <node2_IP> -c total-replication.xml -console
+-b <node1_IP> 指定JBossCache绑定的IP地址
+-c total-replication.xml 指定JBossCache配置文件
+-console 指定使用Console显示的方式运行JBossCache复制示例
+启动完成后Console界面显示出来，JBossCache复制示例支持的命令如下表：
+ls             显示当前节点下所有节点
+ls -l          显示当前节点下所有节点以及节点上对应的内容
+ls -list       与ls -l命令功能完全相同
+tree           显示整个树节点结构
+tree -l        显示整个树节点结构以及节点上对应的内容
+tree -list     与tree -l命令功能完全相同
+cd             进入到某一节点，后面需要加路径，比如 cd a/b/c指进入到a节点下b节点的子节点c
+pwd            显示当前节点位置，类似JBossCache Fqn对应的路径
+add            给当前节点添加键值对内容
+remove         删除当前节点的内容
+modify         修改或更新当前节点的内容
+add node       添加节点，比如添要加“a/b/c”,在提示输入Fqn路径时输入“a/b/c”
+remove node    删除节点，比如要删除“a/b/c”,在提示输入Fqn路径时输入“a/b/c”
+我们可以通过上述命令演示JBossCache的复制状况，在其中一Console界面运行add node命令添加节点“/a/b/c”如下：
+[JBossCache /]add node
+Enter JBossCache Fully Qualified Name:
+/a/b/c
+添加节点成功后我们到另一Console界面运行tree -l命令显示树状结构的节点路径如下：
+[JBossCache /]tree -l
+/  -  {}
+└── a  -  {}
+    └── b  -  {}
+        └── c  -  {}
+我们可以发现新添加的“/a/b/c”已经复制完成，当前JBossCache中共有4个节点，每个节点的都没有任何内容，接下来我们演示向节点b添加内容，并验证添加的内容会同步复制到相对应的JBossCache示例的b节点。我们同样在其中一Console界面运行cd进入到b节点
+[JBossCache /]cd a/b
+进入b节点后运行add命令，添加键值对k1/v1:
+[JBossCache b]add
+
+    Add/Modify JBossCache via Fully Qualified Name [/a/b]
+
+Enter Key:
+k1
+Enter Value:
+v1
+使用同样的办法，继续添加键值对k2/v2和k3/v3。同样我们到另一Console界面运行tree -l命令显示树状结构及其各个节点对应的内容：
+[JBossCache /]tree -l
+/  -  {}
+└── a  -  {}
+    └── b  -  {k3=v3, k1=v1, k2=v2}
+        └── c  -  {}
+如上添加在b节点上的内容已经复制到对应树的b节点上。
+2.3 以bsh显示的方式运行JBossCache复制示例
+bsh类似Console，只是console集成在GUI界面，bsh语法类似Java编程语言语法，我们可以通过bsh界面演示JBossCache的事务性。在局域网中的两台机器上分别打开两个终端，进入DEMO_HOME/bin目录，执行：
+./jbosscache.sh -b <node1_IP> -c total-replication.xml -bsh
+./jbosscache.sh -b <node2_IP> -c total-replication.xml -bsh
+-b <node1_IP> 指定JBossCache绑定的IP地址
+-c total-replication.xml 指定JBossCache配置文件
+-bsh 指定使用bsh显示的方式运行JBossCache复制示例
+同样我们选择两个bsh界面中任何一个，执行添加“a/b/c”路径操作，具体在bsh输入框，依次执行创建Fqn并将创建的Fqn添加到root节点，如下：
+root.addChild(Fqn.fromString("/a/b/c"));
+同样，执行完成后我们可以到另一bsh界面查看树状结构复制状况。接下来我们通过bsh界面演示JBossCache事务性和批量提交。在BeanShell输入框一次运行如下Java语句：
+tm = cache.getTransactionManager();
+tm.begin();
+b = root.getChild(Fqn.fromString("/a/b"));
+b.put("k1", "v1");
+b.put("k2", "v2");
+b.put("k3", "v3");
+tm.commit();
+我们可以看到只有当执行提交操作后，键值对k1/v1，k2/v2，k3/v3添加到两个树的b节点。另外下图为我们在bsh界面执行Java语句的截图：
+   docs/img/jbosscache-replication-demo-bsh.png 
+3. JBossCache复制示例的调试日志分析
+启动JBossCache复制示例时可以添加-debug参数
+./jbosscache.sh -c total-replication.xml -debug
+这样在DEMO_HOME/log/demo.log中会有详细日志信息，包括节点创建，节点删除，节点内容改变等。在启动示例的console中我们也可以看到相关日志，包括JGroups通道初始化，RPCManagerImpl启动，视图更新等日志，如下：
+---
+NFO: JGroups version: 2.6.13.GA
+
+---------------------------------------------------------
+GMS: address is node1_IP:55250 (cluster=JBossCache-Demo)
+---------------------------------------------------------
+Jun 25, 2013 2:26:34 PM org.jboss.cache.RPCManagerImpl$MembershipListenerAdaptor viewAccepted
+INFO: Received new cluster view: [node1_IP:55250|0] [node1_IP:55250]
+Jun 25, 2013 2:26:34 PM org.jboss.cache.RPCManagerImpl start
+INFO: Cache local address is node1_IP:55250
+Jun 25, 2013 2:26:34 PM org.jboss.cache.RPCManagerImpl start
+INFO: state was retrieved successfully (in 2.02 seconds)
+Jun 25, 2013 2:26:34 PM org.jboss.cache.factories.ComponentRegistry internalStart
+INFO: JBoss Cache version: JBossCache 'Malagueta' 3.2.5.GA
+Jun 25, 2013 2:26:43 PM org.jboss.cache.RPCManagerImpl$MembershipListenerAdaptor viewAccepted
+INFO: Received new cluster view: [node1_IP:55250|1] [node1_IP:55250, node2_IP:42039]
+---
+如果想查看更详细的日志，我们可以在DEMO_HOME/conf/log4j.xml文件中调整日志级别，这样会有更详细的日志输出。
+
+JBossCache基本API
+JBossCache复制示例的源代码位于cluster/jbosscache/demo目录下，接下来我们通过代码端分析来说明以上演示的功能。
+---
+160    CacheFactory<String, String> factory = new DefaultCacheFactory<String, String>();
+161    Cache<String, String> cache = factory.createCache(configurationFile, false);
+---
+如上为JBossCacheView类第160行和161行，这里我们通过JBossCache DefaultCacheFactory创建缓存，注意createCache（）方法的第二个参数为false，表示我们没有默认启动缓存，我们是拿到缓存对象手动启动缓存的。
+---
+157         private void handleAddNode() {
+158 
+159                 Node parentNode = cache.getNode(Fqn.fromString(getAbsolutePath()));
+160 
+161                 String fqn = readString("Enter JBossCache Fully Qualified Name:", true);
+162                 Node node = parentNode.addChild(Fqn.fromString(fqn));
+163                 prompt("Add JBossCache Node, Fully Qualified Name [" + node.getFqn() + "]");
+164                 addTreeNode( new TreeNode(fqn, "", getCurrentNode(), null));
+165         }
+---
+如上为JBossCacheConsole类handleAddNode()方法，当我们执行“add node”命令时此段命令会运行，159行根据Fqn路径获取当前节点，161行从命令行读取Fqn路径，比如“/a/b/c”，162行将读取到的Fqn路径添加到当前节点。
+---
+31  @CacheListener
+32  public class JBossCacheConsole extends TreeInputConsole {
+    ...
+231    cache.addCacheListener(this);
+    ...
+340 }
+---
+如上为JBossCacheConsole类显示注册添加缓存 Listener的代码，第31行标注JBossCacheConsole类为CacheListener，231行添加加缓存 Listener。
+---
+434         @CacheStarted
+435         @CacheStopped
+436         public void cacheStartStopEvent(Event e){
+            
+440         @NodeCreated
+441         @NodeLoaded
+442         public void nodeCreated(NodeEvent e) {
+
+461         @NodeModified
+462         public void nodeModified(final NodeModifiedEvent e) {
+
+479         @NodeRemoved
+480         @NodeEvicted
+481         public void nodeRemoved(final NodeEvent e) {
+---
+如上为JBossCacheGUI中注册缓存事件的相关代码。比如434-436行，当缓存启动或停止时，cacheStartStopEvent（）方法被调运，相关的启动或停止的事件作为参数传入。
+
+JBossCache配置
+我们知道JBossCache复制示例在启动时必须通过-c参数指定配置文件（-c total-replication.xml），total-replication.xml文件位于DEMO_HOME/conf目录下，查看此文件，我们可以知道相关信息，如我们使用模式为replication，集群的名字为JBossCache-Demo,在示例中我们大多配置项使用默认配置，如下为一完全JBossCache配置。
+<?xml version="1.0" encoding="UTF-8"?>
+<jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.2">
+<!--
+isolation levels supported: READ_COMMITTED and REPEATABLE_READ
+nodeLockingSchemes: mvcc, pessimistic (deprecated), optimistic (deprecated)
+-->
+<locking
+	isolationLevel="REPEATABLE_READ"
+	lockParentForChildInsertRemove="false"
+	lockAcquisitionTimeout="20000"
+	nodeLockingScheme="mvcc"
+	writeSkewCheck="false"
+	useLockStriping="true"
+	concurrencyLevel="500"/>
+<!--
+Used to register a transaction manager and participate in ongoing
+transactions.
+-->
+<transaction transactionManagerLookupClass="org.jboss.cache.transaction.GenericTransactionManagerLookup" syncRollbackPhase="false" syncCommitPhase="false"/>
+<!--
+Used to register JMX statistics in any available MBean server
+-->
+<jmxStatistics enabled="false"/>
+<!--
+If region based marshalling is used, defines whether new regions are inactive on startup.
+-->
+<startup regionsInactiveOnStartup="true"/>
+<!--
+Used to register JVM shutdown hooks.
+hookBehavior: DEFAULT, REGISTER, DONT_REGISTER
+-->
+<shutdown hookBehavior="DEFAULT"/>
+<!--
+Used to define async listener notification thread pool size
+-->
+<listeners asyncPoolSize="1" asyncQueueSize="100000"/>
+<!--
+Used to enable invocation batching and allow the use of Cache.startBatch()/endBatch() methods.
+-->
+<invocationBatching enabled="false"/>
+<!--
+serialization related configuration, used for replication and cache loading
+-->
+<serialization objectInputStreamPoolSize="12" objectOutputStreamPoolSize="14" version="3.0.0" marshallerClass="org.jboss.cache.marshall.VersionAwareMarshaller" useLazyDeserialization="false" useRegionBasedMarshalling="false"/>
+<!--
+This element specifies that the cache is clustered.
+modes supported: replication (r) or invalidation (i).
+-->
+<clustering mode="replication" clusterName="JBossCache-cluster">
+<!--
+Defines whether to retrieve state on startup
+-->
+<stateRetrieval timeout="20000" fetchInMemoryState="false"/>
+<!--
+Network calls are synchronous.
+-->
+<sync replTimeout="20000"/>
+<!--
+Uncomment this for async replication.
+-->
+<!--<async useReplQueue="true" replQueueInterval="10000" replQueueMaxElements="500" serializationExecutorPoolSize="20" serializationExecutorQueueSize="5000000"/>-->
+<!-- Uncomment to use Buddy Replication -->
+<!--
+<buddy enabled="true" poolName="myBuddyPoolReplicationGroup" communicationTimeout="2000">
+<dataGravitation auto="true" removeOnFind="true" searchBackupTrees="true"/>
+  <locator class="org.jboss.cache.buddyreplication.NextMemberBuddyLocator">
+    <properties>
+      numBuddies = 1
+      ignoreColocatedBuddies = true
+    </properties>
+  </locator>
+</buddy>
+-->
+<!--
+Configures the JGroups channel. Looks up a JGroups config file on the
+classpath or filesystem. udp.xml
+ships with jgroups.jar and will be picked up by the class loader.
+-->
+<jgroupsConfig configFile="udp.xml">
+<!-- uncomment to define a JGroups stack here
+<PING timeout="2000" num_initial_members="3"/>
+<MERGE2 max_interval="30000" min_interval="10000"/>
+<FD_SOCK/>
+<FD timeout="10000" max_tries="5" shun="true"/>
+<VERIFY_SUSPECT timeout="1500"/>
+<pbcast.NAKACK use_mcast_xmit="false" gc_lag="0" retransmit_timeout="300,600,1200,2400,4800" discard_delivered_msgs="true"/>
+<UNICAST timeout="300,600,1200,2400,3600"/>
+<pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000" max_bytes="400000"/>
+<pbcast.GMS print_local_addr="true" join_timeout="5000" shun="false" view_bundling="true" view_ack_collection_timeout="5000"/>
+<FRAG2 frag_size="60000"/>
+<pbcast.STREAMING_STATE_TRANSFER use_reading_thread="true"/>
+<pbcast.FLUSH timeout="0"/>
+-->
+</jgroupsConfig>
+</clustering>
+<!--
+Eviction configuration. WakeupInterval defines how often the eviction thread
+runs, in milliseconds. 0 means
+the eviction thread will never run.
+-->
+<eviction wakeUpInterval="500">
+<default algorithmClass="org.jboss.cache.eviction.LRUAlgorithm" eventQueueSize="200000">
+<property name="maxNodes" value="5000" />
+<property name="timeToLive" value="1000" />
+</default>
+<region name="/org/jboss/data1">
+<property name="timeToLive" value="2000" />
+</region>
+<region name="/org/jboss/data2" algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="100000">
+<property name="maxNodes" value="3000" />
+<property name="minTimeToLive" value="4000" />
+</region>
+</eviction>
+<!--
+Cache loaders.
+If passivation is enabled, state is offloaded to the cache loaders ONLY when evicted. Similarly, when the state is accessed again, it is removed from the cache loader and loaded into memory. Otherwise, state is always maintained in the cache loader as well as in memory.
+Set 'shared' to true if all instances in the cluster use the same cache loader instance, e.g., are talking to the same database.
+-->
+<loaders passivation="false" shared="false">
+<preload>
+<node fqn="/org/jboss"/>
+<node fqn="/org/tempdata"/>
+</preload>
+<!--
+we can have multiple cache loaders, which get chained
+-->
+<loader class="org.jboss.cache.loader.JDBCCacheLoader" async="true" fetchPersistentState="true" ignoreModifications="true" purgeOnStartup="true">
+<properties>
+cache.jdbc.table.name=jbosscache
+cache.jdbc.table.create=true
+cache.jdbc.table.drop=true
+</properties>
+<singletonStore enabled="true" class="org.jboss.cache.loader.SingletonStoreCacheLoader">
+<properties>
+pushStateWhenCoordinator=true
+pushStateWhenCoordinatorTimeout=20000
+</properties>
+</singletonStore>
+</loader>
+</loaders>
+<!--
+Define custom interceptors. All custom interceptors need to extend org.jboss.cache.interceptors.base.CommandInterceptor
+-->
+<!--
+<customInterceptors>
+<interceptor position="first" class="org.jboss.cache.config.parsing.custominterceptors.AaaCustomInterceptor">
+<property name="attrOne" value="value1" />
+<property name="attrTwo" value="value2" />
+</interceptor>
+<interceptor position="last" class="org.jboss.cache.config.parsing.custominterceptors.BbbCustomInterceptor"/>
+<interceptor index="3" class="org.jboss.cache.config.parsing.custominterceptors.AaaCustomInterceptor"/>
+<interceptor before="org.jboss.cache.interceptors.CallInterceptor" class="org.jboss.cache.config.parsing.custominterceptors.BbbCustomInterceptor"/>
+<interceptor after="org.jboss.cache.interceptors.CallInterceptor" class="org.jboss.cache.config.parsing.custominterceptors.AaaCustomInterceptor"/>
+</customInterceptors>
+-->
+</jbosscache>
+---
+
+JBossCache部署及管理
+我们知道JBosCache可以独​立​使​用即在​程​序​里​进​行​部​署，如本示例我们就是在程序中进行部署的，同样JBossCache也可以通过JBoss微容器部署，我们会在以后的例子中演示通过JBoss微容器部署。我们可以通过jconsole对本示例进行监测管理，运行示例后运行jconsole，选择jboss-modules-1.1.2.GA.jar连接，在MBeans列表中选择jboss.cache，我们将看到相关JBossCache统计信息，如下图：
+    docs/img/jbosscache-replication-demo-jmx.png 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
