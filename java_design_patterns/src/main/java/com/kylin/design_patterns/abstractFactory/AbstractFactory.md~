@@ -1,0 +1,14 @@
+Abstract Factory
+----------------
+
+Sets of methods to make various objects. 
+
+An abstract factory has sets of methods to make families of various objects.
+
+In this example the AbstractSoupFactory defines the method names and return types to make various kinds of soup. 
+
+The BostonConcreteSoupFactory and the HonoluluConcreteSoupFactory both extend the AbstractSoupFactory. 
+
+
+
+
