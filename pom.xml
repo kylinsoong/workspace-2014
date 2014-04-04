@@ -20,6 +20,8 @@
         <module>jmx_client_eap6</module>
         <module>jboss_deployment_order</module>
 	<module>java_design_patterns</module>
+	<module>java_concurrency</module>
+	<module>jbpm-embed-test</module>
     </modules>
 
 </project>

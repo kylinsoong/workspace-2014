@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <!-- This file wires up all the dependencies between components -->
+    
+    <bean id="workItemHandlers" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="TokenReplacer" value="com.et.idp.wf.activity.TokenReplacer"/>
+            </map>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="workflowLifecycleListener" class="com.et.idp.wf.engine.WorkflowLifecycleListener">
+        <property name="workflowManager" ref="workflowManager"/>
+    </bean>
+
+    <bean id="registerableItemsFactory" class="com.et.idp.wf.engine.config.WorkflowRegisterableItemsFactory">
+        <property name="workflowManager" ref="workflowManager"/>
+        <property name="workItemHandlers" ref="workItemHandlers"/>
+        <property name="processEventListeners">
+            <list>
+                <ref bean="workflowLifecycleListener"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="userGroupCallback" class="com.et.security.jbpm.kie.UserGroupCallbackImpl"/>
+    
+    <bean id="workflowManager" class="com.et.idp.wf.engine.WorkflowEngine">
+        <!-- processSession is currently injected from outside of Spring -->
+        <property name="kieSessionFactory" ref="kieSessionFactory" />
+    </bean>
+
+</beans>

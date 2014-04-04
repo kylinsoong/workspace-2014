@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <!-- This file specifies how to construct the jbpm RuntimeManager instance 
+    
+         This is a separate file from engineContext so that we can skip all the logic below and directly
+         inject the runtimeManager when running unit/integration tests.
+    -->
+
+    <bean id="runtimeManagerFactory" class="com.et.idp.wf.engine.config.PerProcessClasspathRuntimeManagerFactory">
+        <property name="registerableItemsFactory" ref="registerableItemsFactory"/>
+    </bean>
+    
+    <bean id="runtimeManager" factory-bean="runtimeManagerFactory" factory-method="getRuntimeManager"/>
+    
+    <bean id="kieSessionFactory" class="com.et.idp.wf.engine.config.PerProcessSessionFactory">
+        <property name="runtimeManager" ref="runtimeManager"/>
+    </bean>
+
+</beans>
