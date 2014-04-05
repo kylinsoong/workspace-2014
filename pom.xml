@@ -22,6 +22,7 @@
 	<module>java_design_patterns</module>
 	<module>java_concurrency</module>
 	<module>jbpm-embed-test</module>
+	<module>hotel_reservation</module>
     </modules>
 
 </project>
