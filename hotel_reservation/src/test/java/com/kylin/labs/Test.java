@@ -1,4 +1,4 @@
-package com.kylin.labs.test;
+package com.kylin.labs;
 
 import com.kylin.labs.Reservation;
 
