@@ -1,20 +1,23 @@
-package com.kylin.labs.calendar;
+package com.kylin.labs.view.calendar;
 
-import javax.swing.JLabel;
+import javax.swing.JButton;
 
 /**
- * <p>A publicly cloneable version of JLabel used by
+ * <p>A publicly cloneable version of JButton used by
  * DateChooserStyle and DateChooser to define the various
- * customizable labels used in DateChooser.</p>
+ * customizable buttons used in DateChooser.</p>
  * @see DateChooserStyle
  * @see DateChooser
  */
-public class DateChooserLabel extends JLabel implements Cloneable {
+public class DateChooserButton extends JButton implements Cloneable {
 
   public boolean FORCE_SERIALIZE_COPY = false;
 
+  public DateChooserButton() {
+  }
+
   /**
-   * <p>Clone this instance of DateChooserLabel</p>
+   * <p>Clone this instance of DateChooserButton</p>
    * @return Object
    */
   public Object clone() {
@@ -37,11 +40,14 @@ public class DateChooserLabel extends JLabel implements Cloneable {
       }
     }
     else {
-     try {
-        DateChooserLabel copy = (DateChooserLabel)super.clone();
+      // debug
+      try {
+        DateChooserButton copy = (DateChooserButton)super.clone();
         return copy;
       }
       catch (CloneNotSupportedException e) {
+        // This should never happen unless you have a hacked version of java
+        // or sun changes the cloning policies on swing objects.
         throw new Error("Label is not cloneable.");
       }
     }

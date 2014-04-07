@@ -1,4 +1,4 @@
-package com.kylin.labs.calendar;
+package com.kylin.labs.view.calendar;
 
 import javax.swing.*;
 import java.awt.BorderLayout;
@@ -53,44 +53,35 @@ public class MonthSelector extends DateChooserPanel {
   private void init() {
     setLayout(new BorderLayout());
     setBackground(Color.LIGHT_GRAY);
-    previousMonthButton =
-        (DateChooserButton) style.previousMonthButtonTemplate.clone();
+    previousMonthButton = (DateChooserButton) style.previousMonthButtonTemplate.clone();
     if (previousMonthButton == null) {
       System.err.println("Cloning button failed.");
       throw new Error();
     }
 
-
-    nextMonthButton =
-        (DateChooserButton) style.nextMonthButtonTemplate.clone();
+    nextMonthButton = (DateChooserButton) style.nextMonthButtonTemplate.clone();
     monthNameLabel = (DateChooserLabel) style.monthNameLabelTemplate.clone();
 
     // add listeners
     // set up button for previous month
-    ImageIcon icon = new ImageIcon(DateChooser.class.getResource(
-        style.previousMonthImageName));
+    ImageIcon icon = new ImageIcon(Thread.currentThread().getContextClassLoader().getResource(style.previousMonthImageName));
     if (icon != null) {
       previousMonthButton.setIcon(icon);
     }
     previousMonthButton.addMouseListener(new MouseAdapter() {
       public void mouseReleased(MouseEvent mouseEvent) {
-        fireActionEvent(
-            new ActionEvent(this, DateChooserAction.previousMonthSelected,
-            "Previous Month Selected"));
+        fireActionEvent(new ActionEvent(this, DateChooserAction.previousMonthSelected, "Previous Month Selected"));
       }
     });
 
     // set up button for next month
-    icon = new ImageIcon(DateChooser.class.getResource(
-        style.nextMonthImageName));
+    icon = new ImageIcon(Thread.currentThread().getContextClassLoader().getResource(style.nextMonthImageName));
     if (icon != null) {
       nextMonthButton.setIcon(icon);
     }
     nextMonthButton.addMouseListener(new MouseAdapter() {
       public void mouseReleased(MouseEvent mouseEvent) {
-        fireActionEvent(
-            new ActionEvent(this, DateChooserAction.nextMonthSelected,
-            "Previous Month Selected"));
+        fireActionEvent(new ActionEvent(this, DateChooserAction.nextMonthSelected, "Previous Month Selected"));
       }
     });
 
@@ -108,4 +99,9 @@ public class MonthSelector extends DateChooserPanel {
       monthNameLabel.setText(monthName);
     }
   }
+  
+  public static void main(String[] args) {
+	  System.out.println(Thread.currentThread().getContextClassLoader().getResource("Next.gif"));
+  }
+  
 }

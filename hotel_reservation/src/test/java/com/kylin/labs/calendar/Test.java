@@ -1,31 +1,28 @@
 package com.kylin.labs.calendar;
 
-import javax.swing.JFrame;
-
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JTextField;
-
-import java.awt.Dimension;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.Component;
-
-import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import com.kylin.labs.view.calendar.JPopupCalendar;
 
-import java.text.SimpleDateFormat;
-
-public class SimpleExample2 extends JFrame {
+public class Test extends JFrame {
+	
 	JButton selectDate = new JButton();
 	JTextField showDate = new JTextField();
 	JPopupCalendar popupCal = new JPopupCalendar();
 	SimpleDateFormat df = new SimpleDateFormat("EEE MM/dd/yy");
 
-	public SimpleExample2() {
+	public Test() {
 
 		// JTextField to show the selected date
 		showDate.setPreferredSize(new Dimension(90, 20));
@@ -44,6 +41,10 @@ public class SimpleExample2 extends JFrame {
 		});
 
 		// popup Calendar:
+		// add custom style
+		CustomDaySelectorStyle newStyle = new CustomDaySelectorStyle();
+		popupCal.setDaySelectorStyle(newStyle);
+		popupCal.show(this, 100, 100);
 		popupCal.addPopupMenuListener(new PopupMenuListener() {
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 				if (popupCal.getDate() != null) {
@@ -62,15 +63,13 @@ public class SimpleExample2 extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setTitle("Simple JPopupMenuTest");
 		getContentPane().setLayout(new FlowLayout());
-		getContentPane().add(showDate);
-		getContentPane().add(selectDate);
+//		getContentPane().add(showDate);
+//		getContentPane().add(selectDate);
 	}
 
 	public static void main(String[] args) {
-		java.util.Locale.setDefault(java.util.Locale.GERMAN);
-		System.out.println("First day of week: "
-				+ java.util.Calendar.getInstance().getFirstDayOfWeek());
-		SimpleExample2 simpleTest = new SimpleExample2();
+
+		Test simpleTest = new Test();
 		simpleTest.pack();
 		simpleTest.setLocation(100, 100);
 		simpleTest.setVisible(true);

@@ -30,8 +30,7 @@ public class Input {
 	}
 
 	public String toString() {
-		return "Input [customerType=" + customerType + ", dayType=" + dayType
-				+ "]";
+		return "Input [customerType=" + customerType + ", dayType=" + dayType + "]";
 	}
 
 

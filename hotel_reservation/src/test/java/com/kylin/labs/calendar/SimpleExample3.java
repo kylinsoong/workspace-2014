@@ -1,15 +1,23 @@
 package com.kylin.labs.calendar;
 
 import javax.swing.JFrame;
+
 import java.awt.FlowLayout;
+
 import javax.swing.JButton;
 import javax.swing.JTextField;
+
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.Component;
+
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
+
+import com.kylin.labs.view.calendar.DaySelectorStyle;
+import com.kylin.labs.view.calendar.JPopupCalendar;
+
 import java.text.SimpleDateFormat;
 
 public class SimpleExample3 extends JFrame {

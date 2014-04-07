@@ -5,6 +5,7 @@ import java.awt.Toolkit;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import com.kylin.labs.model.ReservationModel;
 import com.kylin.labs.view.MainFrame;
 
 import java.awt.Dimension;
@@ -27,7 +28,7 @@ public class PopupTest {
      * Construct and show the application.
      */
     public PopupTest() {
-        MainFrame frame = new MainFrame();
+        MainFrame frame = new MainFrame(new ReservationModel());
         // Validate frames that have preset sizes
         // Pack frames that have useful preferred size info, e.g. from their layout
         if (packFrame) {

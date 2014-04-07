@@ -14,7 +14,11 @@ public class FarenheitGUI extends TemperatureGUI{
 		addDisplayListener(new DisplayListener());
 	}
 
-	public void update(Observable o, Object arg) {
+	public void update(Observable o, Object obj) {
+		
+		System.out.println(o);
+		System.out.println(obj);
+		
 		setDisplay("" + model().getF());
 	}
 	

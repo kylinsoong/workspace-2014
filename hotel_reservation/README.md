@@ -1,34 +1,52 @@
-Hotel Reservation
------------------
+Question
+--------
 
-A hotel chain operating in Miami wishes to offer room reservation services over the internet. They have three hotels in Miami: Lakewood, Bridgewood and Ridgewood. Each hotel has separate weekday and weekend(Saturday and Sunday) rates. There are special rates for rewards customer as a part of loyalty program. Each hotel has a rating assigned to it.
+[Hotel Reservation Question](docs/hotel-reservation-question.md)
 
-* Lakewood with a rating of 3 has weekday rates as 110$ for regular customer and 80$ for rewards customer. The weekend rates are 90$ for regular customer and 80$ for a rewards customer.
-* Bridgewood with a rating of 4 has weekday rates as 160$ for regular customer and 110$ for rewards customer. The weekend rates are 60$ for regular customer and 50$ for a rewards customer.
-* Ridgewood with a rating of 5 has weekday rates as 220$ for regular customer and 100$ for rewards customer. The weekend rates are 150$ for regular customer and 40$ for a rewards customer.
 
-Write a program to help an online customer find the cheapest hotel. The input to the program will be a range of dates for a regular or rewards customer. The output should be the cheapest available hotel. In case of a tie, the hotel with highest rating should be returned.
+Building
+--------
 
-INPUT FORMAT:
-<customer_type>: <date1>, <date2>, <date3>, ...
+Ensure you have JDK 7 (or newer) installed
 
-OUTPUT FORMAT:
-<name_of_the_cheapest_hotel>
+> java -version
 
-INPUT 1:
-Regular: 16Mar2009(mon), 17Mar2009(tues), 18Mar2009(wed)
+Ensure you have Maven 3.0.4 (or newer) installed 
 
-OUTPUT 1:
-Lakewood
+> mvn install
 
-INPUT 2:
-Regular: 20Mar2009(fri), 21Mar2009(sat), 22Mar2009(sun)
+The building will generate a executable `hotel-reservation.jar`.
 
-OUTPUT 2:
-Bridgewood
 
-INPUT 3:
-Rewards: 26Mar2009(thur), 27Mar2009(fri), 28Mar2009(sat)
+Running
+-------
 
-OUTPUT 3:
-Ridgewood
+Runing as Command Line:
+
+> java -jar hotel-reservation.jar
+
+> java -jar hotel-reservation.jar -c
+
+The Command Line Running footprint:
+~~~
+[kylin@localhost target]$ java -jar hotel-reservation.jar 
+        Select Cheapest Hotel
+INPUT: Regular: 16Mar2009(mon), 17Mar2009(tues), 18Mar2009(wed)
+OUTPUT: Lakewood
+INPUT: Regular: 20Mar2009(fri), 21Mar2009(sat), 22Mar2009(sun)
+OUTPUT: Bridgewood
+INPUT: Rewards: 26Mar2009(thur), 27Mar2009(fri), 28Mar2009(sat)
+OUTPUT: Ridgewood
+~~~
+
+Running as UI:
+
+> java -jar hotel-reservation.jar -u 
+
+The poped UI like:
+
+[Hotel Reservation UI](docs/hotel-reservation-ui.png)
+
+In the main panel, from left to right, select `Customer Type`, `Start Date`, `End Date`, then click the `Submit` Button, the cheapest hotel will list the center panel.
+
+Navigate the mouse to `select start date` or `select end date` InputText, click the mouse key, the date selector will pop up.

@@ -11,14 +11,19 @@ import java.awt.event.MouseEvent;
 import javax.swing.event.*;
 import javax.swing.*;
 
-import com.kylin.labs.calendar.DaySelectorStyle;
-import com.kylin.labs.calendar.JPopupCalendar;
+import com.kylin.labs.model.ReservationModel;
+import com.kylin.labs.view.calendar.DaySelectorStyle;
+import com.kylin.labs.view.calendar.JPopupCalendar;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
+import java.util.Observable;
+import java.util.Observer;
 
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements Observer {
 
 	private static final long serialVersionUID = -801433318533014068L;
 	
@@ -45,8 +50,14 @@ public class MainFrame extends JFrame {
 	JTextField endDate = new JTextField();
 	
 	JButton jSubmitButton = new JButton();
+	
+	private ReservationModel model;
 
-	public MainFrame() {
+	public MainFrame(ReservationModel model) {
+		
+		this.model = model;
+		model.addObserver(this);
+		
 		try {
 			setDefaultCloseOperation(EXIT_ON_CLOSE);
 			init();
@@ -63,8 +74,8 @@ public class MainFrame extends JFrame {
 	private void init() throws Exception {
 		contentPane = (JPanel) getContentPane();
 		contentPane.setLayout(borderLayout1);
-		setSize(new Dimension(450, 150));
-		setTitle("Hotel Reservation");
+		setSize(new Dimension(450, 180));
+		setTitle("Select Cheapest Hotel");
 		jMenuFile.setText("File");
 		jMenuFileExit.setText("Exit");
 		jMenuFileExit.addActionListener(new ActionListener() {
@@ -80,7 +91,7 @@ public class MainFrame extends JFrame {
 		
 		comb.setSelectedIndex(0);
 		
-		startDate.setText("selected date");
+		startDate.setText("select start date");
 		startDate.setMaximumSize(new Dimension(120, 30));
 		startDate.setMinimumSize(new Dimension(120, 30));
 		startDate.setPreferredSize(new Dimension(120, 30));
@@ -94,7 +105,7 @@ public class MainFrame extends JFrame {
 				popup1.show(comp, xCoord, yCoord);
 			}});
 		
-		endDate.setText("selected date");
+		endDate.setText("select end date");
 		endDate.setMaximumSize(new Dimension(120, 30));
 		endDate.setMinimumSize(new Dimension(120, 30));
 		endDate.setPreferredSize(new Dimension(120, 30));
@@ -112,12 +123,21 @@ public class MainFrame extends JFrame {
 		jSubmitButton.addMouseListener(new MouseAdapter(){
 
 			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-				updatePanel(comb.getSelectedItem().toString(), startDate.getText(), endDate.getText());
-
+				
+				String type = comb.getSelectedItem().toString();
+				Date startTime, endTime;
+				
+				try {
+					startTime = dateformat.parse(startDate.getText());
+					endTime = dateformat.parse(endDate.getText());
+				} catch (ParseException e1) {
+					startTime = new Date();
+					endTime = new Date();
+				}
+				
+				model.doPost(type, startTime, endTime);
 			}
-
-			});
+		});
 		
 		jPanel1.add(comb);
 		jPanel1.add(startDate);
@@ -173,11 +193,13 @@ public class MainFrame extends JFrame {
 		});
 	}
 	
-	private void updatePanel(String type, String start, String end) {
-		// TODO Auto-generated method stub
-		
+	public void update(Observable o, Object obj) {
+
+		jEditorPane1.setText("");
+		jEditorPane1.setText(model.getCheapestName());
 	}
 	
+
 	private class CustomDaySelectorStyle extends DaySelectorStyle {
 		
 		protected void initOverride() {
@@ -186,6 +208,8 @@ public class MainFrame extends JFrame {
 		    dayLabelTemplate.setPreferredSize(new Dimension(25, 25));
 		  };
 	}
+
+	
 	
 }
 

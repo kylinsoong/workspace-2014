@@ -1,4 +1,4 @@
-package com.kylin.labs.calendar;
+package com.kylin.labs.view.calendar;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
