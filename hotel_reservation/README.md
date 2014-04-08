@@ -50,3 +50,9 @@ The poped UI like:
 In the main panel, from left to right, select `Customer Type`, `Start Date`, `End Date`, then click the `Submit` Button, the cheapest hotel will list the center panel.
 
 Navigate the mouse to `select start date` or `select end date` InputText, click the mouse key, the date selector will pop up.
+
+
+MVC
+---
+
+Hotel Reservation UI mode use MVC software pattern
