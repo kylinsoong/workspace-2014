@@ -23,6 +23,7 @@
 	<module>java_concurrency</module>
 	<module>jbpm-embed-test</module>
 	<module>hotel_reservation</module>
+	<module>server_exit</module>
     </modules>
 
 </project>
