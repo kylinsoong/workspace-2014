@@ -2,28 +2,20 @@
 
 This is Exercise Scripts for [Learn Ruby The Hard Way](http://ruby.learncodethehardway.org/book/)
 
-[Exercise 0: The Setup](0-the-setup.md)
-
-[Exercise 1: A Good First Program](ex1.rb)
-
-[Exercise 2: Comments And Pound Characters](ex2.rb)
-
-[Exercise 3: Numbers And Math](ex3.rb)
-
-[Exercise 4: Variables And Names](ex4.rb)
-
-[Exercise 5: More Variables And Printing](ex5.rb)
-
-[Exercise 6: Strings And Text](ex6.rb)
-
-[Exercise 7: More Printing](ex7.rb)
-
-[Exercise 8: Printing, Printing](ex8.rb)
-
-[Exercise 9: Printing, Printing, Printing](ex9.rb)
-
-[Exercise 10: What Was That?](ex10.rb)
-
-[Exercise 11: Asking Questions](ex11.rb)
-
-[Exercise 12: Libraries](ex12.rb)
+* [Exercise 0: The Setup](0-the-setup.md)
+* [Exercise 1: A Good First Program](ex1.rb)
+* [Exercise 2: Comments And Pound Characters](ex2.rb)
+* [Exercise 3: Numbers And Math](ex3.rb)
+* [Exercise 4: Variables And Names](ex4.rb)
+* [Exercise 5: More Variables And Printing](ex5.rb)
+* [Exercise 6: Strings And Text](ex6.rb)
+* [Exercise 7: More Printing](ex7.rb)
+* [Exercise 8: Printing, Printing](ex8.rb)
+* [Exercise 9: Printing, Printing, Printing](ex9.rb)
+* [Exercise 10: What Was That?](ex10.rb)
+* [Exercise 11: Asking Questions](ex11.rb)
+* [Exercise 12: Libraries](ex12.rb)
+* [Exercise 13: Parameters, Unpacking, Variables](ex13.rb)
+* [Exercise 14: Prompting And Passing](ex14.rb)
+* [Exercise 15: Reading Files](ex15.rb)
+* [Exercise 16: Reading And Writing Files](ex16.rb)
