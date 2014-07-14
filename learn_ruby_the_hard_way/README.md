@@ -37,3 +37,5 @@ This is Exercise Scripts for [Learn Ruby The Hard Way](http://ruby.learncodetheh
 * [Exercise 34: Accessing Elements Of Arrays](ex34.rb)
 * [Exercise 35: Branches and Functions](ex35.rb)
 * [Exercise 37: Symbol Review](symbol-review.md)
+* [Exercise 38: Doing Things To Lists](ex38.rb)
+* [Exercise 39: Hashes, Oh Lovely Hashes](ex39.rb)
