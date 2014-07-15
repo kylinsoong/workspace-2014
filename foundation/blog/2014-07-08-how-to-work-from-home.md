@@ -1,7 +1,7 @@
 ---
 layout: base
 title: How to work from home
-tags: [ work, career ]
+tags: [ tag-2, tag-3 ]
 sequence: 1
 ---
 

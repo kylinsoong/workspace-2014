@@ -1,7 +1,7 @@
 ---
 layout: base
 title: Consolidation
-tags: [ blogging, domains ]
+tags: [ tag-1, tag-2 ]
 ---
 
 Today I've relaunched (yet again) my blog.
