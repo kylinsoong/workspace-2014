@@ -39,3 +39,7 @@ This is Exercise Scripts for [Learn Ruby The Hard Way](http://ruby.learncodetheh
 * [Exercise 37: Symbol Review](symbol-review.md)
 * [Exercise 38: Doing Things To Lists](ex38.rb)
 * [Exercise 39: Hashes, Oh Lovely Hashes](ex39.rb)
+* [Exercise 40: Modules, Classes, And Objects](ex40.rb)
+* [Exercise 41: Learning To Speak Object Oriented](ex41.rb)
+* [Exercise 42: Is-A, Has-A, Objects, and Classes](ex42.rb)
+* [Exercise 43: Gothons From Planet Percal](ex43.rb)
