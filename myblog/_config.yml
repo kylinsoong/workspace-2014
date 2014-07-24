@@ -38,3 +38,10 @@ defaults:
       type: "post"
     values:
       layout: "default"
+
+collections:
+  my_collection:
+    output: true
+    permalink: /awesome/:path/
+    foo: bar
+   
