@@ -6,7 +6,6 @@ categories: jekyll
 permalink: /contacts/
 ---
 
-## Why permalink
 
 If you need your processed blog post URLs to be something other than the default `/year/month/day/title.html` then you can set this variable and it will be used as the final URL. 
 

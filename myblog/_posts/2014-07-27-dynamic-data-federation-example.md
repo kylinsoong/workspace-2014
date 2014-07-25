@@ -5,6 +5,7 @@ date:   2014-07-27 17:57:12
 categories: Teiid
 ---
 
+Primary purpose of this document supply a sample for federate 2 data source via JBoss Data Virtualization products.
 
 ## Overview
 
