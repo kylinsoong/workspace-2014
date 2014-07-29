@@ -1,9 +1,10 @@
 ---
-layout: post
+layout: blog
 title:  "Permalink Usage"
 date:   2014-07-28 17:57:12
 categories: jekyll
 permalink: /contacts/
+author: Kylin Soong
 ---
 
 

@@ -1,11 +1,10 @@
 ---
-layout: post
+layout: blog
 title:  "How to include image and resource"
 date:   2014-07-29 17:57:12
 categories: jekyll
+author: Kylin Soong
 ---
-
-## Including images and resources
 
 Use the Following Steps can include images and resources in a post:
 

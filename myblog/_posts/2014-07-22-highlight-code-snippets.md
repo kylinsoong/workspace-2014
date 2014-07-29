@@ -1,8 +1,9 @@
 ---
-layout: post
+layout: blog
 title:  "Highlighting code snippets"
 date:   2014-07-22 17:57:12
 categories: jekyll
+author: Kylin Soong
 ---
 
 Jekyll also has built-in support for syntax highlighting of code snippets using either Pygments or Rouge, and including a code snippet in any post is easy. Below contain a list of samples for highlighting code snippets:
